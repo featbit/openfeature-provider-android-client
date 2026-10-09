@@ -51,7 +51,19 @@ afterEvaluate {
         repositories {
             maven {
                 name = "test"
-                url = uri(rootProject.layout.buildDirectory.dir("repository"))
+                url =
+                    uri(
+                        providers
+                            .gradleProperty("testRepository")
+                            .orElse(
+                                rootProject.layout.buildDirectory
+                                    .dir("repository")
+                                    .get()
+                                    .asFile
+                                    .absolutePath
+                            )
+                            .get()
+                    )
             }
         }
     }

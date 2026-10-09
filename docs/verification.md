@@ -82,3 +82,20 @@ The three upstream090... methods in OpenFeatureIntegrationTest reproduce these c
 - G06: development documentation and local artifact metadata exist. Remote signing/upload, a published documentation JAR, complete transitive dependency locking, and public-repository verification remain unconfigured/unverified. The new CI workflow has not run on GitHub.
 
 This is a buildable, runnable, tested development implementation, not completed release acceptance.
+
+## CI contract checks added on 2026-10-09
+
+The verification workflow now runs these checks through `tools/acceptance.py`:
+
+- Script unit tests for command failures/timeouts, missing or skipped tests, current-run device markers, API drift, and missing/corrupted/stale publication artifacts and metadata.
+- Published-AAR Java/Kotlin consumer unit tests plus Debug/Release lint, alongside the existing Debug and R8 Release builds. Each language has three JVM tests covering invalid configuration, exact caller defaults with error details, and initial context-to-user mapping. These do not replace on-device readiness, identity switching, or core synchronization tests.
+- A checked-in JVM API/descriptor baseline and Java 11 bytecode ceiling. Kotlin-internal JVM-public declarations are included for change review, not promoted to supported APIs. Kotlin metadata/nullability compatibility is not fully checked.
+- Maven snapshot selection, AAR/POM/module/sources presence, SHA-256 validation, equality with the just-built AAR, and exact dependency versions/scopes and module variants.
+
+Each acceptance run stages a fresh Maven repository and forces test execution. Missing or all-skipped test results fail validation. CI passes the same repository to the Cafe samples and retains consumer reports. Manual Gradle publication still defaults to `build/repository`. See [development instructions](../DEVELOPMENT.md#api-and-publication-contract) for baseline updates and repository overrides.
+
+Local evidence: `build/acceptance/20261009-173740-8deeeed0/`. The final acceptance run passed 19 script tests, 40 provider tests, and 3 tests per consumer, with provider/consumer Debug and Release lint and both consumer Debug/R8 Release builds. The published AAR SHA-256 remains `eb65e8cb52b16146367b025428cf4e5c3c303f65e7b59835a7292075d186c8bd`; provider implementation behavior was not changed.
+
+The Cafe sample workflow command also passed against the same staged repository: both languages' Debug/Release builds, unit tests, Debug/Release lint, and instrumentation APK assembly (242 tasks; see `samples.log` in the evidence directory). Instrumentation APKs were compiled, not executed.
+
+No device, live-server, or hosted GitHub Actions run was performed for this CI enhancement. G02 and the outstanding release gates above remain unchanged.

@@ -1,0 +1,449 @@
+public final class co.featbit.openfeature.android.ContextMapper {
+  public static final co.featbit.openfeature.android.ContextMapper INSTANCE;
+    descriptor: Lco/featbit/openfeature/android/ContextMapper;
+  public final co.featbit.openfeature.android.Identity map(dev.openfeature.kotlin.sdk.EvaluationContext, co.featbit.openfeature.android.IdentityPolicy, boolean);
+    descriptor: (Ldev/openfeature/kotlin/sdk/EvaluationContext;Lco/featbit/openfeature/android/IdentityPolicy;Z)Lco/featbit/openfeature/android/Identity;
+
+  public static co.featbit.openfeature.android.Identity map$default(co.featbit.openfeature.android.ContextMapper, dev.openfeature.kotlin.sdk.EvaluationContext, co.featbit.openfeature.android.IdentityPolicy, boolean, int, java.lang.Object);
+    descriptor: (Lco/featbit/openfeature/android/ContextMapper;Ldev/openfeature/kotlin/sdk/EvaluationContext;Lco/featbit/openfeature/android/IdentityPolicy;ZILjava/lang/Object;)Lco/featbit/openfeature/android/Identity;
+}
+public final class co.featbit.openfeature.android.EventBridge {
+  public co.featbit.openfeature.android.EventBridge(kotlinx.coroutines.CoroutineScope);
+    descriptor: (Lkotlinx/coroutines/CoroutineScope;)V
+
+  public co.featbit.openfeature.android.EventBridge(kotlinx.coroutines.CoroutineScope, int, kotlin.jvm.internal.DefaultConstructorMarker);
+    descriptor: (Lkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+
+  public final java.lang.Object awaitClosed(kotlin.coroutines.Continuation<? super kotlin.Unit>);
+    descriptor: (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public final void created();
+    descriptor: ()V
+
+  public final void transition();
+    descriptor: ()V
+
+  public final void state(dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents, boolean);
+    descriptor: (Ldev/openfeature/kotlin/sdk/events/OpenFeatureProviderEvents;Z)V
+
+  public final void change(co.featbit.android.api.FlagChange);
+    descriptor: (Lco/featbit/android/api/FlagChange;)V
+
+  public final void close();
+    descriptor: ()V
+
+  public final kotlinx.coroutines.flow.Flow<dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents> observe();
+    descriptor: ()Lkotlinx/coroutines/flow/Flow;
+
+  public co.featbit.openfeature.android.EventBridge();
+    descriptor: ()V
+
+  public static final java.lang.Object access$getLock$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Ljava/lang/Object;
+
+  public static final boolean access$getClosed$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Z
+
+  public static final dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents access$getLifecycle$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Ldev/openfeature/kotlin/sdk/events/OpenFeatureProviderEvents;
+
+  public static final boolean access$getCreated$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Z
+
+  public static final java.util.LinkedHashSet access$getSlots$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Ljava/util/LinkedHashSet;
+
+  public static final boolean access$getReadable$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Z
+
+  public static final kotlinx.coroutines.channels.Channel access$getNotifications$p(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Lkotlinx/coroutines/channels/Channel;
+
+  public static final boolean access$notifySlots(co.featbit.openfeature.android.EventBridge);
+    descriptor: (Lco/featbit/openfeature/android/EventBridge;)Z
+}
+public interface co.featbit.openfeature.android.FeatBitOptionsFactory {
+  public abstract co.featbit.android.api.Outcome<co.featbit.android.api.ClientOptions> create(co.featbit.android.api.User);
+    descriptor: (Lco/featbit/android/api/User;)Lco/featbit/android/api/Outcome;
+}
+public final class co.featbit.openfeature.android.FeatBitProvider$Builder {
+  public co.featbit.openfeature.android.FeatBitProvider$Builder(android.content.Context, co.featbit.openfeature.android.FeatBitOptionsFactory);
+    descriptor: (Landroid/content/Context;Lco/featbit/openfeature/android/FeatBitOptionsFactory;)V
+
+  public final co.featbit.openfeature.android.FeatBitProvider$Builder identityPolicy(co.featbit.openfeature.android.IdentityPolicy);
+    descriptor: (Lco/featbit/openfeature/android/IdentityPolicy;)Lco/featbit/openfeature/android/FeatBitProvider$Builder;
+
+  public final co.featbit.openfeature.android.FeatBitProvider$Builder initializationTimeoutMillis(long);
+    descriptor: (J)Lco/featbit/openfeature/android/FeatBitProvider$Builder;
+
+  public final co.featbit.openfeature.android.FeatBitProvider$Builder contextChangeTimeoutMillis(long);
+    descriptor: (J)Lco/featbit/openfeature/android/FeatBitProvider$Builder;
+
+  public final co.featbit.android.api.Outcome<co.featbit.openfeature.android.FeatBitProvider> build();
+    descriptor: ()Lco/featbit/android/api/Outcome;
+}
+public final class co.featbit.openfeature.android.FeatBitProvider$Companion {
+  public final co.featbit.openfeature.android.FeatBitProvider$Builder builder(android.content.Context, co.featbit.openfeature.android.FeatBitOptionsFactory);
+    descriptor: (Landroid/content/Context;Lco/featbit/openfeature/android/FeatBitOptionsFactory;)Lco/featbit/openfeature/android/FeatBitProvider$Builder;
+
+  public co.featbit.openfeature.android.FeatBitProvider$Companion(kotlin.jvm.internal.DefaultConstructorMarker);
+    descriptor: (Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+public final class co.featbit.openfeature.android.FeatBitProvider$metadata$1 implements dev.openfeature.kotlin.sdk.ProviderMetadata {
+  public java.lang.String getName();
+    descriptor: ()Ljava/lang/String;
+
+  public java.util.Map<java.lang.String, dev.openfeature.kotlin.sdk.ProviderMetadata> getOriginalMetadata();
+    descriptor: ()Ljava/util/Map;
+}
+public final class co.featbit.openfeature.android.FeatBitProvider implements dev.openfeature.kotlin.sdk.FeatureProvider {
+  public static final co.featbit.openfeature.android.FeatBitProvider$Companion Companion;
+    descriptor: Lco/featbit/openfeature/android/FeatBitProvider$Companion;
+  public co.featbit.openfeature.android.FeatBitProvider(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)V
+
+  public dev.openfeature.kotlin.sdk.ProviderMetadata getMetadata();
+    descriptor: ()Ldev/openfeature/kotlin/sdk/ProviderMetadata;
+
+  public java.util.List<dev.openfeature.kotlin.sdk.Hook<?>> getHooks();
+    descriptor: ()Ljava/util/List;
+
+  public java.lang.Object initialize(dev.openfeature.kotlin.sdk.EvaluationContext, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+    descriptor: (Ldev/openfeature/kotlin/sdk/EvaluationContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public java.lang.Object onContextSet(dev.openfeature.kotlin.sdk.EvaluationContext, dev.openfeature.kotlin.sdk.EvaluationContext, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+    descriptor: (Ldev/openfeature/kotlin/sdk/EvaluationContext;Ldev/openfeature/kotlin/sdk/EvaluationContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public dev.openfeature.kotlin.sdk.ProviderEvaluation<java.lang.Boolean> getBooleanEvaluation(java.lang.String, boolean, dev.openfeature.kotlin.sdk.EvaluationContext);
+    descriptor: (Ljava/lang/String;ZLdev/openfeature/kotlin/sdk/EvaluationContext;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public dev.openfeature.kotlin.sdk.ProviderEvaluation<java.lang.String> getStringEvaluation(java.lang.String, java.lang.String, dev.openfeature.kotlin.sdk.EvaluationContext);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Ldev/openfeature/kotlin/sdk/EvaluationContext;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public dev.openfeature.kotlin.sdk.ProviderEvaluation<java.lang.Integer> getIntegerEvaluation(java.lang.String, int, dev.openfeature.kotlin.sdk.EvaluationContext);
+    descriptor: (Ljava/lang/String;ILdev/openfeature/kotlin/sdk/EvaluationContext;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public dev.openfeature.kotlin.sdk.ProviderEvaluation<java.lang.Long> getLongEvaluation(java.lang.String, long, dev.openfeature.kotlin.sdk.EvaluationContext);
+    descriptor: (Ljava/lang/String;JLdev/openfeature/kotlin/sdk/EvaluationContext;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public dev.openfeature.kotlin.sdk.ProviderEvaluation<java.lang.Double> getDoubleEvaluation(java.lang.String, double, dev.openfeature.kotlin.sdk.EvaluationContext);
+    descriptor: (Ljava/lang/String;DLdev/openfeature/kotlin/sdk/EvaluationContext;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public dev.openfeature.kotlin.sdk.ProviderEvaluation<dev.openfeature.kotlin.sdk.Value> getObjectEvaluation(java.lang.String, dev.openfeature.kotlin.sdk.Value, dev.openfeature.kotlin.sdk.EvaluationContext);
+    descriptor: (Ljava/lang/String;Ldev/openfeature/kotlin/sdk/Value;Ldev/openfeature/kotlin/sdk/EvaluationContext;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public void track(java.lang.String, dev.openfeature.kotlin.sdk.EvaluationContext, dev.openfeature.kotlin.sdk.TrackingEventDetails);
+    descriptor: (Ljava/lang/String;Ldev/openfeature/kotlin/sdk/EvaluationContext;Ldev/openfeature/kotlin/sdk/TrackingEventDetails;)V
+
+  public kotlinx.coroutines.flow.Flow<dev.openfeature.kotlin.sdk.events.OpenFeatureProviderEvents> observe();
+    descriptor: ()Lkotlinx/coroutines/flow/Flow;
+
+  public void shutdown();
+    descriptor: ()V
+
+  public final co.featbit.android.api.ConnectionInformation getConnectionInformation();
+    descriptor: ()Lco/featbit/android/api/ConnectionInformation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.ModeResult> setOffline(long);
+    descriptor: (J)Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.ModeResult> setOnline(long);
+    descriptor: (J)Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.FlushResult> flush();
+    descriptor: ()Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.CacheClearResult> clearCache(co.featbit.android.api.CacheScope, long);
+    descriptor: (Lco/featbit/android/api/CacheScope;J)Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.CloseResult> close();
+    descriptor: ()Lco/featbit/android/api/Operation;
+
+  public static final co.featbit.openfeature.android.FeatBitProvider$Builder builder(android.content.Context, co.featbit.openfeature.android.FeatBitOptionsFactory);
+    descriptor: (Landroid/content/Context;Lco/featbit/openfeature/android/FeatBitOptionsFactory;)Lco/featbit/openfeature/android/FeatBitProvider$Builder;
+}
+public final class co.featbit.openfeature.android.Identity {
+  public co.featbit.openfeature.android.Identity(java.lang.String, java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V
+
+  public final java.lang.String getKey();
+    descriptor: ()Ljava/lang/String;
+
+  public final java.lang.String getName();
+    descriptor: ()Ljava/lang/String;
+
+  public final java.util.Map<java.lang.String, java.lang.String> getAttributes();
+    descriptor: ()Ljava/util/Map;
+
+  public final co.featbit.android.api.User user();
+    descriptor: ()Lco/featbit/android/api/User;
+
+  public final boolean matches(co.featbit.android.api.User);
+    descriptor: (Lco/featbit/android/api/User;)Z
+
+  public final java.lang.String component1();
+    descriptor: ()Ljava/lang/String;
+
+  public final java.lang.String component2();
+    descriptor: ()Ljava/lang/String;
+
+  public final java.util.Map<java.lang.String, java.lang.String> component3();
+    descriptor: ()Ljava/util/Map;
+
+  public final co.featbit.openfeature.android.Identity copy(java.lang.String, java.lang.String, java.util.Map<java.lang.String, java.lang.String>);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lco/featbit/openfeature/android/Identity;
+
+  public static co.featbit.openfeature.android.Identity copy$default(co.featbit.openfeature.android.Identity, java.lang.String, java.lang.String, java.util.Map, int, java.lang.Object);
+    descriptor: (Lco/featbit/openfeature/android/Identity;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;ILjava/lang/Object;)Lco/featbit/openfeature/android/Identity;
+
+  public java.lang.String toString();
+    descriptor: ()Ljava/lang/String;
+
+  public int hashCode();
+    descriptor: ()I
+
+  public boolean equals(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+}
+public final class co.featbit.openfeature.android.IdentityPolicy extends java.lang.Enum<co.featbit.openfeature.android.IdentityPolicy> {
+  public static final co.featbit.openfeature.android.IdentityPolicy REQUIRE_TARGETING_KEY;
+    descriptor: Lco/featbit/openfeature/android/IdentityPolicy;
+  public static final co.featbit.openfeature.android.IdentityPolicy PERSISTENT_ANONYMOUS;
+    descriptor: Lco/featbit/openfeature/android/IdentityPolicy;
+  public static co.featbit.openfeature.android.IdentityPolicy[] values();
+    descriptor: ()[Lco/featbit/openfeature/android/IdentityPolicy;
+
+  public static co.featbit.openfeature.android.IdentityPolicy valueOf(java.lang.String);
+    descriptor: (Ljava/lang/String;)Lco/featbit/openfeature/android/IdentityPolicy;
+
+  public static kotlin.enums.EnumEntries<co.featbit.openfeature.android.IdentityPolicy> getEntries();
+    descriptor: ()Lkotlin/enums/EnumEntries;
+}
+public final class co.featbit.openfeature.android.OperationBridge$watch$4 implements co.featbit.android.api.Registration {
+  public void close();
+    descriptor: ()V
+}
+public final class co.featbit.openfeature.android.OperationBridge {
+  public co.featbit.openfeature.android.OperationBridge(kotlinx.coroutines.CoroutineScope);
+    descriptor: (Lkotlinx/coroutines/CoroutineScope;)V
+
+  public final <T> co.featbit.android.api.Registration watch(co.featbit.android.api.Operation<T>, kotlin.jvm.functions.Function1<? super co.featbit.android.api.Outcome<T>, kotlin.Unit>);
+    descriptor: (Lco/featbit/android/api/Operation;Lkotlin/jvm/functions/Function1;)Lco/featbit/android/api/Registration;
+
+  public final <T> java.lang.Object await(co.featbit.android.api.Operation<T>, kotlin.coroutines.Continuation<? super co.featbit.android.api.Outcome<T>>);
+    descriptor: (Lco/featbit/android/api/Operation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public static final java.lang.Object access$getLock$p(co.featbit.openfeature.android.OperationBridge);
+    descriptor: (Lco/featbit/openfeature/android/OperationBridge;)Ljava/lang/Object;
+
+  public static final java.util.LinkedHashMap access$getProbes$p(co.featbit.openfeature.android.OperationBridge);
+    descriptor: (Lco/featbit/openfeature/android/OperationBridge;)Ljava/util/LinkedHashMap;
+
+  public static final void access$setProbing$p(co.featbit.openfeature.android.OperationBridge, boolean);
+    descriptor: (Lco/featbit/openfeature/android/OperationBridge;Z)V
+}
+public final class co.featbit.openfeature.android.ProviderOperation$observe$1 implements co.featbit.android.api.Registration {
+  public void close();
+    descriptor: ()V
+}
+public final class co.featbit.openfeature.android.ProviderOperation<T> implements co.featbit.android.api.Operation<T> {
+  public co.featbit.openfeature.android.ProviderOperation();
+    descriptor: ()V
+
+  public co.featbit.android.api.Outcome<T> getResult();
+    descriptor: ()Lco/featbit/android/api/Outcome;
+
+  public co.featbit.android.api.Outcome<co.featbit.android.api.Registration> observe(co.featbit.android.api.Completion<T>);
+    descriptor: (Lco/featbit/android/api/Completion;)Lco/featbit/android/api/Outcome;
+
+  public final void complete(co.featbit.android.api.Outcome<T>);
+    descriptor: (Lco/featbit/android/api/Outcome;)V
+
+  public static final java.lang.Object access$getLock$p(co.featbit.openfeature.android.ProviderOperation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderOperation;)Ljava/lang/Object;
+
+  public static final java.util.LinkedHashMap access$getObservers$p(co.featbit.openfeature.android.ProviderOperation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderOperation;)Ljava/util/LinkedHashMap;
+}
+public final class co.featbit.openfeature.android.ProviderRuntime$WhenMappings {
+  public static final int[] $EnumSwitchMapping$0;
+    descriptor: [I
+}
+public final class co.featbit.openfeature.android.ProviderRuntime {
+  public co.featbit.openfeature.android.ProviderRuntime(android.content.Context, co.featbit.openfeature.android.FeatBitOptionsFactory, co.featbit.openfeature.android.IdentityPolicy, long, long, co.featbit.android.api.ClientFactory, kotlinx.coroutines.CoroutineDispatcher, kotlin.jvm.functions.Function0<java.lang.Long>);
+    descriptor: (Landroid/content/Context;Lco/featbit/openfeature/android/FeatBitOptionsFactory;Lco/featbit/openfeature/android/IdentityPolicy;JJLco/featbit/android/api/ClientFactory;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlin/jvm/functions/Function0;)V
+
+  public co.featbit.openfeature.android.ProviderRuntime(android.content.Context, co.featbit.openfeature.android.FeatBitOptionsFactory, co.featbit.openfeature.android.IdentityPolicy, long, long, co.featbit.android.api.ClientFactory, kotlinx.coroutines.CoroutineDispatcher, kotlin.jvm.functions.Function0, int, kotlin.jvm.internal.DefaultConstructorMarker);
+    descriptor: (Landroid/content/Context;Lco/featbit/openfeature/android/FeatBitOptionsFactory;Lco/featbit/openfeature/android/IdentityPolicy;JJLco/featbit/android/api/ClientFactory;Lkotlinx/coroutines/CoroutineDispatcher;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+
+  public final co.featbit.openfeature.android.EventBridge getEvents();
+    descriptor: ()Lco/featbit/openfeature/android/EventBridge;
+
+  public final java.lang.Object context(dev.openfeature.kotlin.sdk.EvaluationContext, boolean, kotlin.coroutines.Continuation<? super kotlin.Unit>);
+    descriptor: (Ldev/openfeature/kotlin/sdk/EvaluationContext;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public final <T> dev.openfeature.kotlin.sdk.ProviderEvaluation<T> evaluate(dev.openfeature.kotlin.sdk.EvaluationContext, kotlin.jvm.functions.Function1<? super co.featbit.android.api.FeatBitClient, ? extends T>);
+    descriptor: (Ldev/openfeature/kotlin/sdk/EvaluationContext;Lkotlin/jvm/functions/Function1;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+
+  public final void track(java.lang.String, dev.openfeature.kotlin.sdk.EvaluationContext, dev.openfeature.kotlin.sdk.TrackingEventDetails);
+    descriptor: (Ljava/lang/String;Ldev/openfeature/kotlin/sdk/EvaluationContext;Ldev/openfeature/kotlin/sdk/TrackingEventDetails;)V
+
+  public final co.featbit.android.api.ConnectionInformation connection();
+    descriptor: ()Lco/featbit/android/api/ConnectionInformation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.ModeResult> mode(boolean, long);
+    descriptor: (ZJ)Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.FlushResult> flush();
+    descriptor: ()Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.CacheClearResult> clearCache(co.featbit.android.api.CacheScope, long);
+    descriptor: (Lco/featbit/android/api/CacheScope;J)Lco/featbit/android/api/Operation;
+
+  public final co.featbit.android.api.Operation<co.featbit.android.api.CloseResult> close();
+    descriptor: ()Lco/featbit/android/api/Operation;
+
+  public static final java.lang.Object access$reconcile(co.featbit.openfeature.android.ProviderRuntime, co.featbit.openfeature.android.ProviderRuntime$Request, kotlin.coroutines.Continuation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/openfeature/android/ProviderRuntime$Request;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public static final java.lang.Object access$ensureClient(co.featbit.openfeature.android.ProviderRuntime, co.featbit.openfeature.android.ProviderRuntime$Request, kotlin.coroutines.Continuation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/openfeature/android/ProviderRuntime$Request;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public static final java.lang.Object access$drain(co.featbit.openfeature.android.ProviderRuntime, co.featbit.openfeature.android.ProviderRuntime$Request, kotlin.coroutines.Continuation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/openfeature/android/ProviderRuntime$Request;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public static final java.lang.Object access$ready(co.featbit.openfeature.android.ProviderRuntime, co.featbit.android.api.FeatBitClient, co.featbit.openfeature.android.ProviderRuntime$Request, long, kotlin.coroutines.Continuation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/android/api/FeatBitClient;Lco/featbit/openfeature/android/ProviderRuntime$Request;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+  public static final long access$getContextTimeout$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)J
+
+  public static final void access$reject(co.featbit.openfeature.android.ProviderRuntime, co.featbit.openfeature.android.ProviderRuntime$Request, dev.openfeature.kotlin.sdk.exceptions.OpenFeatureError);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/openfeature/android/ProviderRuntime$Request;Ldev/openfeature/kotlin/sdk/exceptions/OpenFeatureError;)V
+
+  public static final dev.openfeature.kotlin.sdk.exceptions.OpenFeatureError$ProviderNotReadyError access$notReady(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Ldev/openfeature/kotlin/sdk/exceptions/OpenFeatureError$ProviderNotReadyError;
+
+  public static final java.lang.Object access$getLock$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Ljava/lang/Object;
+
+  public static final void access$hint(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)V
+
+  public static final void access$setHintDirty$p(co.featbit.openfeature.android.ProviderRuntime, boolean);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Z)V
+
+  public static final co.featbit.openfeature.android.ProviderRuntime$Request access$getRecovering$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/ProviderRuntime$Request;
+
+  public static final void access$setRecovering$p(co.featbit.openfeature.android.ProviderRuntime, co.featbit.openfeature.android.ProviderRuntime$Request);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/openfeature/android/ProviderRuntime$Request;)V
+
+  public static final boolean access$getHintDirty$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Z
+
+  public static final long access$remaining(co.featbit.openfeature.android.ProviderRuntime, long);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;J)J
+
+  public static final co.featbit.android.api.Diagnostic access$fail(co.featbit.openfeature.android.ProviderRuntime, co.featbit.android.api.OutcomeCode);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/android/api/OutcomeCode;)Lco/featbit/android/api/Diagnostic;
+
+  public static final kotlinx.coroutines.sync.Mutex access$getSubmission$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lkotlinx/coroutines/sync/Mutex;
+
+  public static final kotlinx.coroutines.CoroutineScope access$getScope$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lkotlinx/coroutines/CoroutineScope;
+
+  public static final boolean access$getClosing$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Z
+
+  public static final dev.openfeature.kotlin.sdk.exceptions.OpenFeatureError access$getError$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Ldev/openfeature/kotlin/sdk/exceptions/OpenFeatureError;
+
+  public static final co.featbit.openfeature.android.Identity access$getAdopted$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/Identity;
+
+  public static final co.featbit.openfeature.android.ProviderRuntime$Request access$getLatest$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/ProviderRuntime$Request;
+
+  public static final boolean access$getReadable$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Z
+
+  public static final co.featbit.android.api.FeatBitClient access$getClient$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/android/api/FeatBitClient;
+
+  public static final co.featbit.openfeature.android.OperationBridge access$getBridge$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/OperationBridge;
+
+  public static final int access$getCommands$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)I
+
+  public static final void access$setCommands$p(co.featbit.openfeature.android.ProviderRuntime, int);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;I)V
+
+  public static final java.util.LinkedHashSet access$getPendingCommands$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Ljava/util/LinkedHashSet;
+
+  public static final int access$getModes$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)I
+
+  public static final void access$setModes$p(co.featbit.openfeature.android.ProviderRuntime, int);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;I)V
+
+  public static final boolean access$getCleanupFinished$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Z
+
+  public static final co.featbit.openfeature.android.ProviderOperation access$getCloseResult$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/ProviderOperation;
+
+  public static final dev.openfeature.kotlin.sdk.exceptions.OpenFeatureError$ProviderFatalError access$closedError(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Ldev/openfeature/kotlin/sdk/exceptions/OpenFeatureError$ProviderFatalError;
+
+  public static final void access$setLastConnection$p(co.featbit.openfeature.android.ProviderRuntime, co.featbit.android.api.ConnectionInformation);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/android/api/ConnectionInformation;)V
+
+  public static final void access$setCleanupFinished$p(co.featbit.openfeature.android.ProviderRuntime, boolean);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Z)V
+
+  public static final co.featbit.openfeature.android.FeatBitOptionsFactory access$getFactory$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/FeatBitOptionsFactory;
+
+  public static final co.featbit.openfeature.android.IdentityPolicy access$getPolicy$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/openfeature/android/IdentityPolicy;
+
+  public static final co.featbit.android.api.ClientFactory access$getClientFactory$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Lco/featbit/android/api/ClientFactory;
+
+  public static final android.content.Context access$getApplicationContext$p(co.featbit.openfeature.android.ProviderRuntime);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;)Landroid/content/Context;
+
+  public static final void access$install(co.featbit.openfeature.android.ProviderRuntime, co.featbit.android.api.FeatBitClient);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/android/api/FeatBitClient;)V
+
+  public static final void access$setOptions$p(co.featbit.openfeature.android.ProviderRuntime, co.featbit.android.api.ClientOptions);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/android/api/ClientOptions;)V
+
+  public static final void access$setClient$p(co.featbit.openfeature.android.ProviderRuntime, co.featbit.android.api.FeatBitClient);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/android/api/FeatBitClient;)V
+
+  public static final void access$setAdopted$p(co.featbit.openfeature.android.ProviderRuntime, co.featbit.openfeature.android.Identity);
+    descriptor: (Lco/featbit/openfeature/android/ProviderRuntime;Lco/featbit/openfeature/android/Identity;)V
+}
+public final class co.featbit.openfeature.android.ValueMapper$WhenMappings {
+  public static final int[] $EnumSwitchMapping$0;
+    descriptor: [I
+  public static final int[] $EnumSwitchMapping$1;
+    descriptor: [I
+}
+public final class co.featbit.openfeature.android.ValueMapper {
+  public static final co.featbit.openfeature.android.ValueMapper INSTANCE;
+    descriptor: Lco/featbit/openfeature/android/ValueMapper;
+  public final dev.openfeature.kotlin.sdk.Value json(co.featbit.android.api.FbValue);
+    descriptor: (Lco/featbit/android/api/FbValue;)Ldev/openfeature/kotlin/sdk/Value;
+
+  public final <T> T detail(co.featbit.android.api.EvaluationDetail<T>);
+    descriptor: (Lco/featbit/android/api/EvaluationDetail;)Ljava/lang/Object;
+
+  public final <T> dev.openfeature.kotlin.sdk.ProviderEvaluation<T> result(T);
+    descriptor: (Ljava/lang/Object;)Ldev/openfeature/kotlin/sdk/ProviderEvaluation;
+}

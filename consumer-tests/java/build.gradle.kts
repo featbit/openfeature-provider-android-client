@@ -15,6 +15,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
+    testOptions { unitTests.isReturnDefaultValues = true }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
@@ -24,4 +25,7 @@ android {
     }
 }
 
-dependencies { implementation("co.featbit:featbit-openfeature-provider-android:0.1.0-SNAPSHOT") }
+dependencies {
+    implementation("co.featbit:featbit-openfeature-provider-android:0.1.0-SNAPSHOT")
+    testImplementation("junit:junit:4.13.2")
+}

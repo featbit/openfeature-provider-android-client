@@ -13,7 +13,17 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         exclusiveContent {
-            forRepository { maven { url = uri("../build/repository") } }
+            forRepository {
+                maven {
+                    url =
+                        uri(
+                            providers
+                                .gradleProperty("testRepository")
+                                .orElse("../build/repository")
+                                .get()
+                        )
+                }
+            }
             filter { includeModule("co.featbit", "featbit-openfeature-provider-android") }
         }
         google()

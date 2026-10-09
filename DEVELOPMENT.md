@@ -60,7 +60,24 @@ python tools/acceptance.py
 python tools/acceptance.py --device emulator-5554
 ```
 
-Local publication writes to `build/repository`; remote upload is not configured. Consumers are independent Gradle projects that read the provider AAR from that repository and resolve FeatBit and OpenFeature from Maven Central. The script retains per-step logs and uses a unique device run identifier to avoid accepting old log entries.
+Direct Gradle publication writes to `build/repository`. The acceptance script instead stages each run in a new `build/acceptance/<run-id>/repository` and passes that repository to the independent Java/Kotlin consumers. `--repository <new-directory>` selects an explicit fresh destination; existing directories are rejected. Consumers and samples accept `-PtestRepository=<absolute-path>` to use that same publication. Remote upload is not configured.
+
+Acceptance runs the script's own unit tests, formatting, provider unit tests and Debug/Release lint, publication/API checks, and both consumers' Debug/Release (R8) builds, JVM unit tests and Debug/Release lint. Tests use the published AAR through Maven, not a provider project dependency or internal test hooks. JVM tests cover configuration rejection, caller defaults/error details, and initial context mapping; real core lifecycle and identity-switch execution remain device acceptance responsibilities. Stub Android methods are enabled only for JVM fixtures.
+
+`--rerun-tasks` forces new test execution; missing, failed, or all-skipped XML test results fail acceptance. Each run retains command logs and a report with test counts and artifact SHA-256 hashes. Device success requires the current run's complete unique marker; failure takes precedence over success, and timeout fails the run.
+
+### API and publication contract
+
+`tools/check_publication.py` resolves the exact snapshot selected by Maven metadata. It requires AAR, POM, Gradle module metadata, and sources JAR, validates SHA-256 sidecars and the AAR against this build, checks public classes/source presence, and verifies coordinates, dependency versions/scopes, and API/runtime module variants. A Javadoc JAR and signing are not currently configured and are not claimed by this check.
+
+`tools/check_api.py` compares the published AAR's public JVM declarations and descriptors with `provider/api/jvm-api.txt`, rejects bytecode newer than Java 11 and unexpected bundled packages. The JVM baseline deliberately includes Kotlin-internal types that compile as public: it detects changes to that Java-visible surface without declaring those types supported application APIs. It is not a complete Kotlin metadata/nullability compatibility checker. Review intentional changes before explicitly updating the baseline:
+
+```powershell
+python tools/check_api.py --update
+python -B -m unittest discover -s tools -p 'test_*.py'
+```
+
+The update command reads `provider/build/outputs/aar/provider-release.aar`; build the current release first. CI never updates the baseline automatically. Passing these checks does not resolve G02 or authorize a release.
 
 ## Documentation
 

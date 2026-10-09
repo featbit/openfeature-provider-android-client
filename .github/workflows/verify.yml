@@ -10,10 +10,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
-      - run: python3 tools/acceptance.py
+      - run: python3 tools/acceptance.py --repository build/ci-repository
       - name: Build and verify Cafe samples
         run: >-
-          bash gradlew -p samples
+          bash gradlew -p samples -PtestRepository=${{ github.workspace }}/build/ci-repository
           :kotlin:assembleDebug :java:assembleDebug
           :kotlin:assembleRelease :java:assembleRelease
           :kotlin:testDebugUnitTest :java:testDebugUnitTest
@@ -27,6 +27,10 @@ jobs:
           path: |
             build/acceptance/
             provider/build/reports/
+            consumer-tests/java/build/reports/
+            consumer-tests/kotlin/build/reports/
+            consumer-tests/java/build/test-results/
+            consumer-tests/kotlin/build/test-results/
             provider/build/outputs/aar/
             samples/kotlin/build/reports/
             samples/java/build/reports/
