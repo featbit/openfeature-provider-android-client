@@ -76,7 +76,7 @@ The three upstream090... methods in OpenFeatureIntegrationTest reproduce these c
 ## Outstanding release verification
 
 - G02: obtain an upstream status-arbitration fix in a released dependency, then convert the reproductions into regressions asserting correct behavior.
-- G03: A01–A15/R01–R24 remain the full acceptance targets. The specific scenarios above have coverage, but not every permutation has been exhausted, including all create-submission boundaries, cache-clear/context-transition combinations, logger reentrancy, and real API registration with 65+ existing subscribers.
+- G03: A01–A15/R01–R24 remain the full acceptance targets. The specific scenarios above have coverage, but not every permutation has been exhausted, including all create-submission boundaries and all control-operation permutations. The concurrency expansion below covers cache-clear/context-transition cases, logger reentrancy, and real API registration with 65 existing subscribers.
 - G04: API 21 devices, physical devices, and systematic memory/main-thread I/O checks have not run. API 34 emulator results do not replace them.
 - G05: real-server cold start, cache/Bootstrap recovery, and persisted analytics attribution have not been verified.
 - G06: development documentation and local artifact metadata exist. Signing, generated documentation JARs and a manual Central workflow are now configured (see [release instructions](release.md)); real Central publication, complete transitive dependency locking, and public-repository verification remain unverified. The new CI workflow has not run on GitHub.
@@ -112,3 +112,20 @@ Added the manually dispatched `release-candidate.yml`, using the Android SDK's r
 - Workflow YAML, manual-only trigger, read-only repository permissions, step ordering and embedded Python syntax were checked locally.
 
 No workflow dispatch, remote upload, public version/tag creation, device test, or new live-server acceptance occurred. Real Central credentials, Portal validation and fresh public consumption remain unverified. G02 remains open; infrastructure completion does not change release readiness.
+
+
+## Provider concurrency coverage added on 2026-10-09
+
+Ten deterministic regressions extend the provider suite from 40 to 50 tests. They use a shared coroutine test scheduler, explicit operation completion, and suspended collectors; no wall-clock sleeps are used. FakeCore records cache-clear identity, scope, and submitted timeout and can hold completion independently of the caller's deadline.
+
+| Design target | Added coverage |
+| --- | --- |
+| R17 | A submitted current-context clear keeps A until completion; B remains unreadable until its own readiness completes. A clear requested during switching is rejected immediately; an already queued clear is rejected if identity is still unstable at submission. |
+| R21 | An expired queued clear never reaches core; queue time is subtracted from the submitted timeout; a submitted clear remains owned after caller timeout, blocks later submissions, and retains its timeout result after close and late core completion. Queued operations receive CLOSED and never submit after close. |
+| R18 | A logger switches context and throws while reporting ignored tracking attributes. The old user's track is rejected, diagnostics contain no private input, and subsequent tracking for B succeeds. Existing capacity tests remain in place. |
+| R22 | 65 collectors subscribe before real isolated OpenFeature registration and block on their first event. Registration, evaluations, Stale/Ready delivery to the API, partial cancellation, resumption, and shutdown succeed with only two core listeners. All collector jobs and core registrations terminate. |
+| R23 | B accepted before the factory starts supplies the sole creation identity. Invalid or expired B during factory execution cannot expose frozen A or be adopted by the late client; explicit C recovers. Existing tests cover valid B during factory execution, pending creation, caller cancellation, and close during factory execution. |
+
+Validation: `:provider:testDebugUnitTest` passed all 50 tests (zero failures or skips), including the three unchanged upstream 0.9.0 defect reproductions. `spotlessCheck` and `git diff --check` passed. Local command output: `build/concurrency-tests.log`; JUnit XML: `provider/build/test-results/testDebugUnitTest/`.
+
+Only test fixtures, tests, and this coverage record changed. Neither production provider code nor the Android SDK or OpenFeature dependency changed. This verifies controlled interleavings, not arbitrary JVM thread stress, device behavior, or live-server attribution. It does not declare every A/R permutation or the complete release gate passed.

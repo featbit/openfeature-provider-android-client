@@ -25,6 +25,9 @@ internal class FakeCore {
     val readyOperations = mutableListOf<ProviderOperation<ReadyResult>>()
     val modes = mutableListOf<ProviderOperation<ModeResult>>()
     val tracks = mutableListOf<Pair<String, Double>>()
+    val cacheClears = mutableListOf<Triple<String, CacheScope, Long>>()
+    val cacheOperations = mutableListOf<ProviderOperation<CacheClearResult>>()
+    var autoClear = true
     var autoReady = true
     var autoIdentify = true
     var autoMode = true
@@ -109,7 +112,12 @@ internal class FakeCore {
                     Outcome.success(TrackResult.ACCEPTED)
                 }
                 "flush" -> completed(FlushResult.EMPTY)
-                "clearCache" -> completed(CacheClearResult.CLEARED)
+                "clearCache" ->
+                    ProviderOperation<CacheClearResult>().also {
+                        cacheClears.add(Triple(identity, args[0] as CacheScope, args[1] as Long))
+                        cacheOperations.add(it)
+                        if (autoClear) it.complete(Outcome.success(CacheClearResult.CLEARED))
+                    }
                 "close" -> {
                     closeCalls++
                     status = SyncStatus.CLOSED

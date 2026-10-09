@@ -68,6 +68,68 @@ class OpenFeatureIntegrationTest {
         assertEquals(1, core.closeCalls)
     }
 
+    @Test
+    fun existingSlowSubscribersDoNotBlockRealApiRegistrationOrUpdates() = runTest {
+        val core = FakeCore()
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val provider =
+            FeatBitProvider(
+                ProviderRuntime(
+                    TestContext(),
+                    { ClientOptions.builder().user(it).offline(true).build() },
+                    IdentityPolicy.REQUIRE_TARGETING_KEY,
+                    100,
+                    100,
+                    core.factory,
+                    dispatcher,
+                ) {
+                    testScheduler.currentTime
+                }
+            )
+        val blocked = CompletableDeferred<Unit>()
+        val received = IntArray(65)
+        val subscribers =
+            (0 until 65).map { index ->
+                backgroundScope.launch(dispatcher) {
+                    provider.observe().collect {
+                        received[index]++
+                        blocked.await()
+                    }
+                }
+            }
+        runCurrent()
+        val api = createOpenFeatureAPIInstance()
+        val registration = async {
+            api.setProviderAndWait(provider, ImmutableContext("A"), dispatcher)
+        }
+        runCurrent()
+        registration.await()
+        assertTrue(received.all { it == 1 })
+        assertEquals(2, core.registrations)
+        assertEquals("A", api.getClient().getStringValue("flag", "fallback"))
+        subscribers.take(32).forEach { it.cancel() }
+        runCurrent()
+        core.status = SyncStatus.STALE
+        core.signal()
+        runCurrent()
+        assertTrue(api.getStatus() is OpenFeatureStatus.Stale)
+        assertEquals("A", api.getClient().getStringValue("flag", "fallback"))
+        core.status = SyncStatus.READY
+        core.signal()
+        runCurrent()
+        assertEquals(OpenFeatureStatus.Ready, api.getStatus())
+        blocked.complete(Unit)
+        runCurrent()
+        assertTrue(received.take(32).all { it == 1 })
+        assertTrue(received.drop(32).all { it >= 2 })
+        assertEquals(2, core.registrations)
+        api.shutdown()
+        runCurrent()
+        assertEquals(1, core.closeCalls)
+        assertEquals(0, core.registrations)
+        assertTrue(subscribers.all { it.isCompleted })
+    }
+
     /** A passing reproduction asserts the defect, not compliance with release gate G02. */
     @Test
     fun upstream090OverwritesStaleAndFatalDuringInitialization() = runTest {

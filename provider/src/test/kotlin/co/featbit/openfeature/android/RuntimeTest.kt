@@ -576,4 +576,247 @@ class RuntimeTest {
         assertEquals("A", provider.getStringEvaluation("x", "default", a).value)
         finish(provider, core)
     }
+
+    @Test
+    fun submittedCacheClearKeepsOldIdentityUntilCompletion() = runTest {
+        val core = FakeCore().apply { autoClear = false }
+        val provider = provider(core)
+        initialize(provider)
+        core.autoReady = false
+        val clear = provider.clearCache(CacheScope.CURRENT_CONTEXT, 100)
+        runCurrent()
+        val change = async { provider.onContextSet(a, b) }
+        runCurrent()
+        assertEquals(listOf(Triple("A", CacheScope.CURRENT_CONTEXT, 100L)), core.cacheClears)
+        assertTrue(core.identifies.isEmpty())
+        core.cacheOperations.single().complete(Outcome.success(CacheClearResult.CLEARED))
+        runCurrent()
+        assertTrue(clear.getResult()!!.isSuccess)
+        assertEquals("B", core.identity)
+        assertFalse(change.isCompleted)
+        assertThrows(OpenFeatureError.ProviderNotReadyError::class.java) {
+            provider.getStringEvaluation("flag", "fallback", b)
+        }
+        core.readyOperations.last().complete(Outcome.success(ReadyResult.OFFLINE_LOCAL))
+        runCurrent()
+        change.await()
+        assertEquals("B", provider.getStringEvaluation("flag", "fallback", b).value)
+        finish(provider, core)
+    }
+
+    @Test
+    fun cacheClearQueuedBeforeContextChangeIsRejectedAtSubmission() = runTest {
+        val core = FakeCore().apply { autoClear = false }
+        val provider = provider(core)
+        initialize(provider)
+        val first = provider.clearCache(CacheScope.CURRENT_CONTEXT, 100)
+        runCurrent()
+        val queued = provider.clearCache(CacheScope.CURRENT_CONTEXT, 100)
+        core.autoIdentify = false
+        val change = async(start = CoroutineStart.UNDISPATCHED) { provider.onContextSet(a, b) }
+        runCurrent()
+        assertEquals(
+            OutcomeCode.INVALID,
+            provider.clearCache(CacheScope.CURRENT_CONTEXT, 100).getResult()!!.code,
+        )
+        core.cacheOperations.single().complete(Outcome.success(CacheClearResult.CLEARED))
+        runCurrent()
+        assertTrue(first.getResult()!!.isSuccess)
+        assertEquals(OutcomeCode.INVALID, queued.getResult()!!.code)
+        assertEquals(1, core.cacheClears.size)
+        core.identity = "B"
+        core.identifies.single().second.complete(core.receipt())
+        runCurrent()
+        change.await()
+        finish(provider, core)
+    }
+
+    @Test
+    fun expiredQueuedCacheClearNeverReachesCore() = runTest {
+        val core = FakeCore().apply { autoClear = false }
+        val provider = provider(core)
+        initialize(provider)
+        val first = provider.clearCache(CacheScope.CURRENT_CONTEXT, 100)
+        runCurrent()
+        val queued = provider.clearCache(CacheScope.NAMESPACE, 10)
+        runCurrent()
+        advanceTimeBy(11)
+        runCurrent()
+        assertEquals(OutcomeCode.TIMED_OUT, queued.getResult()!!.code)
+        core.cacheOperations.single().complete(Outcome.success(CacheClearResult.CLEARED))
+        runCurrent()
+        assertTrue(first.getResult()!!.isSuccess)
+        assertEquals(1, core.cacheClears.size)
+        finish(provider, core)
+    }
+
+    @Test
+    fun queuedCacheClearReceivesOnlyRemainingBudget() = runTest {
+        val core = FakeCore().apply { autoClear = false }
+        val provider = provider(core)
+        initialize(provider)
+        provider.clearCache(CacheScope.CURRENT_CONTEXT, 100)
+        runCurrent()
+        val queued = provider.clearCache(CacheScope.NAMESPACE, 100)
+        runCurrent()
+        advanceTimeBy(30)
+        core.cacheOperations.first().complete(Outcome.success(CacheClearResult.CLEARED))
+        runCurrent()
+        assertEquals(Triple("A", CacheScope.NAMESPACE, 70L), core.cacheClears.last())
+        core.cacheOperations.last().complete(Outcome.success(CacheClearResult.CLEARED))
+        runCurrent()
+        assertTrue(queued.getResult()!!.isSuccess)
+        finish(provider, core)
+    }
+
+    @Test
+    fun submittedCacheTimeoutRetainsOwnershipAndCloseResult() = runTest {
+        val core = FakeCore().apply { autoClear = false }
+        val provider = provider(core)
+        initialize(provider)
+        val clear = provider.clearCache(CacheScope.CURRENT_CONTEXT, 10)
+        runCurrent()
+        advanceTimeBy(11)
+        runCurrent()
+        assertEquals(OutcomeCode.TIMED_OUT, clear.getResult()!!.code)
+        val queued = provider.clearCache(CacheScope.NAMESPACE, 100)
+        runCurrent()
+        assertEquals(1, core.cacheClears.size)
+        provider.close()
+        runCurrent()
+        assertEquals(OutcomeCode.CLOSED, queued.getResult()!!.code)
+        core.cacheOperations.single().complete(Outcome.success(CacheClearResult.CLEARED))
+        runCurrent()
+        assertEquals(OutcomeCode.TIMED_OUT, clear.getResult()!!.code)
+        assertEquals(OutcomeCode.CLOSED, queued.getResult()!!.code)
+        assertEquals(1, core.cacheClears.size)
+        finish(provider, core)
+    }
+
+    @Test
+    fun invalidContextDuringFactoryCannotExposeFrozenUser() = runTest {
+        val core = FakeCore()
+        lateinit var provider: FeatBitProvider
+        var invalid: Deferred<Result<Unit>>? = null
+        provider =
+            provider(core) { user ->
+                invalid =
+                    async(start = CoroutineStart.UNDISPATCHED) {
+                        runCatching { provider.onContextSet(a, ImmutableContext(" ")) }
+                    }
+                ClientOptions.builder().user(user).offline(true).anonymousEnabled(true).build()
+            }
+        val initial = async { runCatching { provider.initialize(a) } }
+        runCurrent()
+        initial.await()
+        assertTrue(invalid!!.await().isFailure)
+        assertEquals(1, core.createCalls)
+        assertTrue(core.identifies.isEmpty())
+        assertThrows(OpenFeatureError.TargetingKeyMissingError::class.java) {
+            provider.getStringEvaluation("flag", "fallback", a)
+        }
+        val recovery = async { provider.onContextSet(null, c) }
+        runCurrent()
+        recovery.await()
+        assertEquals("C", provider.getStringEvaluation("flag", "fallback", c).value)
+        finish(provider, core)
+    }
+
+    @Test
+    fun throwingLoggerCanSwitchContextBeforeTrackAdmission() = runTest {
+        val core = FakeCore()
+        lateinit var provider: FeatBitProvider
+        var change: Deferred<Unit>? = null
+        val diagnostics = mutableListOf<Diagnostic>()
+        provider =
+            provider(core) { user ->
+                ClientOptions.builder()
+                    .user(user)
+                    .offline(true)
+                    .anonymousEnabled(true)
+                    .logLevel(LogLevel.WARN)
+                    .logger { _, diagnostic ->
+                        diagnostics.add(diagnostic)
+                        if (change == null) {
+                            change =
+                                async(start = CoroutineStart.UNDISPATCHED) {
+                                    provider.onContextSet(a, b)
+                                }
+                            runCurrent()
+                        }
+                        throw IllegalStateException("logger failure")
+                    }
+                    .build()
+            }
+        initialize(provider)
+        provider.track(
+            "private-event",
+            a,
+            TrackingEventDetails(
+                1,
+                ImmutableStructure(mapOf("private-field" to Value.String("private-value"))),
+            ),
+        )
+        change!!.await()
+        assertTrue(core.tracks.isEmpty())
+        assertEquals("B", provider.getStringEvaluation("flag", "fallback", b).value)
+        assertEquals(2, diagnostics.size)
+        assertTrue(diagnostics.none { it.toString().contains("private-") })
+        provider.track("accepted", b, TrackingEventDetails(2))
+        assertEquals(listOf("B" to 2.0), core.tracks)
+        finish(provider, core)
+    }
+
+    @Test
+    fun latestContextBeforeFactoryStartsIsUsedForOnlyCreation() = runTest {
+        val core = FakeCore()
+        val users = mutableListOf<String?>()
+        val provider =
+            provider(core) { user ->
+                users.add(user?.key)
+                ClientOptions.builder().user(user).offline(true).anonymousEnabled(true).build()
+            }
+        val initial =
+            async(start = CoroutineStart.UNDISPATCHED) { runCatching { provider.initialize(a) } }
+        val change = async(start = CoroutineStart.UNDISPATCHED) { provider.onContextSet(a, b) }
+        runCurrent()
+        initial.await()
+        change.await()
+        assertEquals(listOf("B"), users)
+        assertEquals(1, core.createCalls)
+        assertTrue(core.identifies.isEmpty())
+        assertEquals("B", provider.getStringEvaluation("flag", "fallback", b).value)
+        finish(provider, core)
+    }
+
+    @Test
+    fun contextExpiredDuringFactoryIsNeverAdoptedByLateClient() = runTest {
+        val core = FakeCore()
+        lateinit var provider: FeatBitProvider
+        var change: Deferred<Result<Unit>>? = null
+        provider =
+            provider(core) { user ->
+                change =
+                    async(start = CoroutineStart.UNDISPATCHED) {
+                        runCatching { provider.onContextSet(a, b) }
+                    }
+                advanceTimeBy(101)
+                runCurrent()
+                ClientOptions.builder().user(user).offline(true).anonymousEnabled(true).build()
+            }
+        val initial = async { runCatching { provider.initialize(a) } }
+        runCurrent()
+        initial.await()
+        assertTrue(change!!.await().isFailure)
+        assertEquals(1, core.createCalls)
+        assertTrue(core.identifies.isEmpty())
+        assertThrows(OpenFeatureError.ProviderNotReadyError::class.java) {
+            provider.getStringEvaluation("flag", "fallback", b)
+        }
+        val recovery = async { provider.onContextSet(b, c) }
+        runCurrent()
+        recovery.await()
+        assertEquals("C", provider.getStringEvaluation("flag", "fallback", c).value)
+        finish(provider, core)
+    }
 }
