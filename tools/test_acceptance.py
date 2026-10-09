@@ -92,7 +92,7 @@ class PublicationTests(unittest.TestCase):
         for k, v in (("groupId", publication.GROUP), ("artifactId", publication.ARTIFACT), ("version", publication.VERSION)):
             ET.SubElement(root, k).text = v
         versions = ET.SubElement(ET.SubElement(root, "versioning"), "snapshotVersions")
-        for ext, classifier in (("aar", ""), ("pom", ""), ("module", ""), ("jar", "sources")):
+        for ext, classifier in (("aar", ""), ("pom", ""), ("module", ""), ("jar", "sources"), ("jar", "javadoc")):
             value = "0.1.0-20261009.120000-1"
             entry = ET.SubElement(versions, "snapshotVersion")
             for k, v in (("extension", ext), ("classifier", classifier), ("value", value)):
@@ -109,6 +109,8 @@ class PublicationTests(unittest.TestCase):
             z.writestr("AndroidManifest.xml", "manifest")
         with zipfile.ZipFile(self.files["sources"], "w") as z:
             z.writestr("co/featbit/openfeature/android/FeatBitProvider.kt", "class FeatBitProvider")
+        with zipfile.ZipFile(self.files["javadoc"], "w") as z:
+            z.writestr("index.html", "API reference fixture")
         pom = ET.Element("project", xmlns="http://maven.apache.org/POM/4.0.0")
         for k, v in (("groupId", publication.GROUP), ("artifactId", publication.ARTIFACT), ("version", publication.VERSION), ("packaging", "aar")):
             ET.SubElement(pom, k).text = v
@@ -136,7 +138,7 @@ class PublicationTests(unittest.TestCase):
         return publication.verify(self.repository, self.built)
 
     def test_valid_publication(self):
-        self.assertEqual(4, len(self.verify()))
+        self.assertEqual(5, len(self.verify()))
 
     def test_missing_sources_rejected_even_with_old_sources(self):
         self.files["sources"].rename(self.artifact_dir / "old-sources.jar")

@@ -1,0 +1,106 @@
+name: Publish Android Provider to Maven Central
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish automatically (must match a v-prefixed tag)
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: central-release-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release credentials
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import os
+          names = ('SIGNING_KEY', 'SIGNING_PASSWORD', 'CENTRAL_TOKEN_USERNAME', 'CENTRAL_TOKEN_PASSWORD')
+          missing = [name for name in names if not os.environ.get(name)]
+          if missing:
+              raise SystemExit('Missing release environment secrets: ' + ', '.join(missing))
+          PY
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          # Override the action default, which includes the unavailable legacy tools package.
+          packages: platform-tools
+      - run: sdkmanager 'platforms;android-34' 'build-tools;34.0.0' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Check code formatting
+        run: bash gradlew spotlessCheck --console=plain
+      - name: Validate version and tag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 tools/prepare_release.py --version "$RELEASE_VERSION" --check-tag
+      - name: Check acceptance scripts
+        run: python3 -B -m unittest discover -s tools -p 'test_*.py'
+      - name: Run independent artifact matrix
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 tools/acceptance.py --version "$RELEASE_VERSION" --repository "$RUNNER_TEMP/accepted-repository"
+      - name: Stage signed publication (no remote upload)
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: bash gradlew :provider:publishReleasePublicationToTestRepository -PproviderVersion="$RELEASE_VERSION" -PtestRepository="$RUNNER_TEMP/signed-repository" -PsignPublication=true --console=plain
+      - name: Package Maven Central bundle
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: >-
+          python3 tools/prepare_release.py --version "$RELEASE_VERSION"
+          --repository "$RUNNER_TEMP/signed-repository"
+          --accepted-repository "$RUNNER_TEMP/accepted-repository"
+          --bundle "$RUNNER_TEMP/featbit-openfeature-provider-android-$RELEASE_VERSION-central-bundle.zip"
+      - name: Upload Maven Central bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-central-bundle
+          path: ${{ runner.temp }}/featbit-openfeature-provider-android-${{ inputs.version }}-central-bundle.zip
+          if-no-files-found: error
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-release-candidate
+          path: ${{ runner.temp }}/signed-repository/
+      - name: Upload and automatically publish to Maven Central
+        timeout-minutes: 35
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+        run: python3 -u tools/publish_central.py --bundle "$RUNNER_TEMP/featbit-openfeature-provider-android-$RELEASE_VERSION-central-bundle.zip" --version "$RELEASE_VERSION" --report "$RUNNER_TEMP/central-publication/report.json"
+      - name: Upload Central publication result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: central-publication-result
+          path: ${{ runner.temp }}/central-publication/report.json
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-acceptance-evidence
+          path: |
+            build/acceptance/**/report.json
+            build/acceptance/**/*.log
+            provider/build/reports/
+            consumer-tests/java/build/reports/
+            consumer-tests/kotlin/build/reports/
+            consumer-tests/java/build/test-results/
+            consumer-tests/kotlin/build/test-results/

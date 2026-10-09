@@ -30,6 +30,8 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    implementation("co.featbit:featbit-openfeature-provider-android:0.1.0-SNAPSHOT")
+    implementation(
+        "co.featbit:featbit-openfeature-provider-android:${providers.gradleProperty("providerVersion").getOrElse("0.1.0-SNAPSHOT")}"
+    )
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }

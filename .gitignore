@@ -35,3 +35,6 @@ local.properties
 # Local native sample review captures
 .impeccable/review/
 !samples/gradle/wrapper/gradle-wrapper.jar
+
+# Python tool bytecode
+__pycache__/

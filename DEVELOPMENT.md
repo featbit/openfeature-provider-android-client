@@ -60,7 +60,7 @@ python tools/acceptance.py
 python tools/acceptance.py --device emulator-5554
 ```
 
-Direct Gradle publication writes to `build/repository`. The acceptance script instead stages each run in a new `build/acceptance/<run-id>/repository` and passes that repository to the independent Java/Kotlin consumers. `--repository <new-directory>` selects an explicit fresh destination; existing directories are rejected. Consumers and samples accept `-PtestRepository=<absolute-path>` to use that same publication. Remote upload is not configured.
+Direct Gradle publication writes to `build/repository`. The acceptance script instead stages each run in a new `build/acceptance/<run-id>/repository` and passes that repository to the independent Java/Kotlin consumers. `--repository <new-directory>` selects an explicit fresh destination; existing directories are rejected. Consumers and samples accept `-PtestRepository=<absolute-path>` to use that same publication. Remote upload is available only through the manually dispatched [release workflow](docs/release.md).
 
 Acceptance runs the script's own unit tests, formatting, provider unit tests and Debug/Release lint, publication/API checks, and both consumers' Debug/Release (R8) builds, JVM unit tests and Debug/Release lint. Tests use the published AAR through Maven, not a provider project dependency or internal test hooks. JVM tests cover configuration rejection, caller defaults/error details, and initial context mapping; real core lifecycle and identity-switch execution remain device acceptance responsibilities. Stub Android methods are enabled only for JVM fixtures.
 
@@ -68,7 +68,7 @@ Acceptance runs the script's own unit tests, formatting, provider unit tests and
 
 ### API and publication contract
 
-`tools/check_publication.py` resolves the exact snapshot selected by Maven metadata. It requires AAR, POM, Gradle module metadata, and sources JAR, validates SHA-256 sidecars and the AAR against this build, checks public classes/source presence, and verifies coordinates, dependency versions/scopes, and API/runtime module variants. A Javadoc JAR and signing are not currently configured and are not claimed by this check.
+`tools/check_publication.py` resolves the exact snapshot selected by Maven metadata. It requires AAR, POM, Gradle module metadata, sources JAR, and generated documentation JAR, validates SHA-256 sidecars and the AAR against this build, checks public classes/source presence, and verifies coordinates, dependency versions/scopes, and API/runtime module variants. The `javadoc` classifier contains Dokka HTML. Signing and Central upload are opt-in release operations; see [release instructions](docs/release.md).
 
 `tools/check_api.py` compares the published AAR's public JVM declarations and descriptors with `provider/api/jvm-api.txt`, rejects bytecode newer than Java 11 and unexpected bundled packages. The JVM baseline deliberately includes Kotlin-internal types that compile as public: it detects changes to that Java-visible surface without declaring those types supported application APIs. It is not a complete Kotlin metadata/nullability compatibility checker. Review intentional changes before explicitly updating the baseline:
 

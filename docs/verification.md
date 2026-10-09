@@ -79,7 +79,7 @@ The three upstream090... methods in OpenFeatureIntegrationTest reproduce these c
 - G03: A01–A15/R01–R24 remain the full acceptance targets. The specific scenarios above have coverage, but not every permutation has been exhausted, including all create-submission boundaries, cache-clear/context-transition combinations, logger reentrancy, and real API registration with 65+ existing subscribers.
 - G04: API 21 devices, physical devices, and systematic memory/main-thread I/O checks have not run. API 34 emulator results do not replace them.
 - G05: real-server cold start, cache/Bootstrap recovery, and persisted analytics attribution have not been verified.
-- G06: development documentation and local artifact metadata exist. Remote signing/upload, a published documentation JAR, complete transitive dependency locking, and public-repository verification remain unconfigured/unverified. The new CI workflow has not run on GitHub.
+- G06: development documentation and local artifact metadata exist. Signing, generated documentation JARs and a manual Central workflow are now configured (see [release instructions](release.md)); real Central publication, complete transitive dependency locking, and public-repository verification remain unverified. The new CI workflow has not run on GitHub.
 
 This is a buildable, runnable, tested development implementation, not completed release acceptance.
 
@@ -99,3 +99,16 @@ Local evidence: `build/acceptance/20261009-173740-8deeeed0/`. The final acceptan
 The Cafe sample workflow command also passed against the same staged repository: both languages' Debug/Release builds, unit tests, Debug/Release lint, and instrumentation APK assembly (242 tasks; see `samples.log` in the evidence directory). Instrumentation APKs were compiled, not executed.
 
 No device, live-server, or hosted GitHub Actions run was performed for this CI enhancement. G02 and the outstanding release gates above remain unchanged.
+
+
+## Maven Central workflow rehearsal on 2026-10-09
+
+Added the manually dispatched `release-candidate.yml`, using the Android SDK's release environment, four secret names, Central AUTOMATIC uploader, and bounded PUBLISHED-state polling. Added parameterized publication/consumer versions, POM SCM/developer metadata, Dokka 2.2.0 HTML documentation in the javadoc JAR, optional in-memory signing, and strict signed-bundle comparison with accepted artifacts.
+
+- 34 Python tests passed, including release tag validation, release-coordinate publications, bundle layout, missing signatures, checksum corruption, signed/accepted drift, Central status handling, and credential redaction. Network interactions in these tests were mocked.
+- Release-version local acceptance (`--version 0.1.0`) passed: 40 provider tests, Java/Kotlin 3 tests each, Debug/R8 Release consumer builds, provider/consumer Debug/Release lint, API baseline and all five publication files. Evidence: `build/acceptance/20261009-182448-2b137d4e/`. This rehearsal version does not select a public release.
+- Default snapshot publication also built successfully and passed the five-artifact publication validator.
+- An isolated, disposable one-day test PGP key successfully signed the release publication. Packaging compared all five artifacts with the accepted unsigned repository; GPG verified all five signatures. Evidence: `build/release-signing-smoke/57cbd591f0a347f0b665cb898e5261fa/signing.log`. No real release credentials were read or used.
+- Workflow YAML, manual-only trigger, read-only repository permissions, step ordering and embedded Python syntax were checked locally.
+
+No workflow dispatch, remote upload, public version/tag creation, device test, or new live-server acceptance occurred. Real Central credentials, Portal validation and fresh public consumption remain unverified. G02 remains open; infrastructure completion does not change release readiness.

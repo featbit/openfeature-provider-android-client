@@ -290,6 +290,8 @@ OpenFeature shutdown initiates provider cleanup without waiting for it. `provide
 
 ## See Also
 
+- [Maven Central release workflow](docs/release.md)
+
 - [Development notes and build commands](DEVELOPMENT.md): local publication and acceptance checks.
 - [Design overview](docs/README.md)
 - [Detailed architecture](docs/architecture.md)

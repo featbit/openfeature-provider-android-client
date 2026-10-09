@@ -6,6 +6,8 @@ The goal is an independent Android AAR implementing OpenFeature Kotlin `FeatureP
 
 ## Reading order
 
+- [Maven Central release workflow](release.md)
+
 For application integration, start with the [main README](../README.md) or the [Java README](../README.java.md).
 
 1. [Detailed architecture](./architecture.md): components, state machine, internal contracts, concurrency, resources, events, and cleanup.

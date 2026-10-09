@@ -3,6 +3,7 @@ import argparse
 import datetime
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -62,7 +63,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Optional adb serial; installs only the two acceptance apps")
     parser.add_argument("--repository", type=Path, help="New, non-existing directory for the staged publication")
+    parser.add_argument("--version", default="0.1.0-SNAPSHOT")
     args = parser.parse_args()
+    if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[A-Za-z0-9.]+)?", args.version):
+        parser.error("Invalid artifact version")
     run_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8]
     output = ROOT / "build" / "acceptance" / run_id
     output.mkdir(parents=True)
@@ -73,12 +77,12 @@ def main():
     def command(label, argv):
         run_command(label, argv, output)
     command("script-tests", [sys.executable, "-B", "-m", "unittest", "discover", "-s", "tools", "-p", "test_*.py"])
-    command("provider", gradle + ["spotlessCheck", ":provider:testDebugUnitTest", ":provider:lintDebug", ":provider:lintRelease", ":provider:publishReleasePublicationToTestRepository", f"-PtestRepository={repository.as_posix()}", "--rerun-tasks", "--console=plain"])
-    artifacts = check_publication.verify(repository, ROOT / "provider/build/outputs/aar/provider-release.aar")
+    command("provider", gradle + ["spotlessCheck", ":provider:testDebugUnitTest", ":provider:lintDebug", ":provider:lintRelease", ":provider:publishReleasePublicationToTestRepository", f"-PtestRepository={repository.as_posix()}", f"-PproviderVersion={args.version}", "--rerun-tasks", "--console=plain"])
+    artifacts = check_publication.verify(repository, ROOT / "provider/build/outputs/aar/provider-release.aar", args.version)
     check_api.verify(artifacts["aar"])
     counts = {"provider": require_tests(ROOT / "provider/build/test-results/testDebugUnitTest")}
     tasks = [f":{language}:{task}" for language in ("java", "kotlin") for task in ("assembleDebug", "assembleRelease", "testDebugUnitTest", "lintDebug", "lintRelease")]
-    command("consumers", gradle + ["-p", "consumer-tests", *tasks, f"-PtestRepository={repository.as_posix()}", "--rerun-tasks", "--console=plain"])
+    command("consumers", gradle + ["-p", "consumer-tests", *tasks, f"-PtestRepository={repository.as_posix()}", f"-PproviderVersion={args.version}", "--rerun-tasks", "--console=plain"])
     for language in ("java", "kotlin"):
         counts[language] = require_tests(ROOT / "consumer-tests" / language / "build/test-results/testDebugUnitTest")
     if args.device:
