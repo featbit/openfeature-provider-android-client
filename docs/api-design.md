@@ -1,84 +1,84 @@
-# 公共 API 设计
+# Public API Design
 
-## 1. API 分层
+## 1. API layers
 
-应用通过 OpenFeature Client 评估与 Track，通过 OpenFeature API 注册 provider、设置上下文和订阅状态。FeatBitProvider 负责适配；应用不需要再自行创建 FeatBitClient。
+Applications evaluate flags and Track through the OpenFeature Client, and use the OpenFeature API to register the provider, set context, and observe status. FeatBitProvider handles adaptation; applications do not need to create a FeatBitClient themselves.
 
-首版新增三个顶层公共类型：`FeatBitProvider`、`FeatBitOptionsFactory`、`IdentityPolicy`。Builder 作为 FeatBitProvider 的嵌套类型。映射器、状态协调器、值转换器、事件桥均为内部实现。
+The first release adds three top-level public types: `FeatBitProvider`, `FeatBitOptionsFactory`, and `IdentityPolicy`. Builder is nested in FeatBitProvider. Mappers, state coordination, value conversion, and event bridging remain internal.
 
-以下为签名契约说明；对应实现已位于 provider 模块，验证范围见[验证记录](./verification.md)。`Context` 在构造配置处指 Android Context；`EvaluationContext` 指 OpenFeature 上下文。
+The signatures below define the contract. The implementation is in the provider module; see the [verification record](./verification.md) for coverage. In construction/configuration APIs, `Context` means Android Context; `EvaluationContext` means the OpenFeature context.
 
-## 2. 创建与配置
+## 2. Construction and configuration
 
-| API | 类型/结果 | 契约 |
+| API | Type/result | Contract |
 | --- | --- | --- |
-| FeatBitProvider.builder(applicationContext, optionsFactory) | Builder，提供 Java 静态入口 | 只保存 applicationContext；不开始网络、磁盘、监听或 SDK 创建 |
-| Builder.identityPolicy(policy) | Builder | 默认 REQUIRE_TARGETING_KEY；另一选项 PERSISTENT_ANONYMOUS |
-| Builder.initializationTimeoutMillis(value) | Builder | 默认 10,000；正数，无人为固定上限；超时只结束等待 |
-| Builder.contextChangeTimeoutMillis(value) | Builder | 默认 10,000；正数；切换后继续由 SDK 同步 |
-| Builder.build() | Outcome&lt;FeatBitProvider&gt; | 仅校验 provider 自身配置，沿用核心 Outcome；factory 在 initialize 才调用 |
-| FeatBitOptionsFactory.create(user: User?) | Outcome&lt;ClientOptions&gt; | Kotlin SAM/Java 函数式接口；冻结的创建用户或显式匿名的 null；首次初始化调用一次 |
+| FeatBitProvider.builder(applicationContext, optionsFactory) | Builder with a Java static entry point | Retain only applicationContext; do not start networking, disk access, listeners, or SDK creation |
+| Builder.identityPolicy(policy) | Builder | Default REQUIRE_TARGETING_KEY; alternative PERSISTENT_ANONYMOUS |
+| Builder.initializationTimeoutMillis(value) | Builder | Default 10,000; positive with no arbitrary fixed upper limit; timeout ends only the wait |
+| Builder.contextChangeTimeoutMillis(value) | Builder | Default 10,000; positive; the SDK continues synchronization after a transition |
+| Builder.build() | Outcome&lt;FeatBitProvider&gt; | Validate only provider configuration using the core Outcome model; invoke the factory during initialize |
+| FeatBitOptionsFactory.create(user: User?) | Outcome&lt;ClientOptions&gt; | Kotlin SAM/Java functional interface; receive the frozen creation user or null for explicit anonymity; invoke once during initial setup |
 
-Factory 应返回新构造、不可变的 ClientOptions，不得创建客户端，不应执行阻塞 I/O。配置中的 initialUser 必须在 key/name/attributes 上与传入 user 相等；PERSISTENT_ANONYMOUS 策略始终要求 anonymousEnabled=true，匿名初始用户必须为 null。不一致在创建 SDK 前失败，具名模式禁止 factory 悄悄替换用户。
+The factory must return newly constructed, immutable ClientOptions. It must not create a client and should not perform blocking I/O. initialUser must equal the supplied user in key/name/attributes. PERSISTENT_ANONYMOUS always requires anonymousEnabled=true; an anonymous initial user must be null. A mismatch fails before SDK creation. In named mode, the factory must not silently substitute another user.
 
-factory 开始后创建身份固定；期间收到新上下文，也不重复调用 factory，而是在唯一客户端创建后采用最新有效身份。核心可能先启动创建身份的同步，provider 在最新身份采用且就绪前禁止评估/Track；关闭可以阻止尚未提交的 create，详见[初始化协议](./architecture.md#6-初始化协议)。
+Once the factory starts, the creation identity is fixed. Context changes do not trigger another factory call; after the single client is created, it adopts the latest valid identity. The core may initially synchronize the creation identity. Provider evaluation/Track remain blocked until the latest identity is adopted and ready. Closing can prevent an unsubmitted create; see the [initialization protocol](./architecture.md#6-initialization-protocol).
 
-这样处理是因为现有 ClientOptions 不可变、没有公开 copy/toBuilder，而初始 EvaluationContext 在 initialize 时才确定。简单接收已构造 ClientOptions 再 identify，会先以错误用户启动同步及用户事件。
+This design is necessary because ClientOptions is immutable and has no public copy/toBuilder, while the initial EvaluationContext is determined only at initialize. Accepting prebuilt ClientOptions and then calling identify could start synchronization and user events for the wrong user.
 
-端点、sdkKey、事件开关、隐私属性、Bootstrap、TestData/custom source、缓存、日志、重试及后台策略全部通过 ClientOptions 配置。Provider 不增加同名转发 setter，不修改原 SDK 默认值。Factory 返回 INVALID 时初始化失败；配置错误使用 GENERAL，用户映射错误使用 INVALID_CONTEXT 或 TARGETING_KEY_MISSING。
+Configure endpoints, sdkKey, event settings, privacy attributes, Bootstrap, TestData/custom sources, caching, logging, retries, and background policy through ClientOptions. The provider adds no duplicate forwarding setters and does not change SDK defaults. A factory INVALID result fails initialization. Configuration errors use GENERAL; user mapping errors use INVALID_CONTEXT or TARGETING_KEY_MISSING.
 
-## 3. 必须实现的 OpenFeature 接口
+## 3. Required OpenFeature interface
 
-源接口为 OpenFeature Kotlin v0.9.0 的 `dev.openfeature.kotlin.sdk.FeatureProvider`。
+The source interface is OpenFeature Kotlin v0.9.0's `dev.openfeature.kotlin.sdk.FeatureProvider`.
 
-| API | 返回类型 | Provider 行为 |
+| API | Return type | Provider behavior |
 | --- | --- | --- |
-| metadata | ProviderMetadata | 稳定名称 `FeatBit` |
-| hooks | List&lt;Hook&lt;*&gt;&gt; | 首版为空列表；应用 hooks 由 OpenFeature 管理 |
-| initialize(initialContext: EvaluationContext?) | suspend Unit | 映射身份、创建 SDK、建立订阅并等待 readiness；失败抛 OpenFeatureError |
-| onContextSet(oldContext: EvaluationContext?, newContext: EvaluationContext) | suspend Unit | 校验并切换当前用户；等待当前切换就绪；同值上下文也接受调用 |
-| getBooleanEvaluation(key, defaultValue: Boolean, context: EvaluationContext?) | ProviderEvaluation&lt;Boolean&gt; | boolean 类型严格解析 |
-| getStringEvaluation(key, defaultValue: String, context: EvaluationContext?) | ProviderEvaluation&lt;String&gt; | string 类型，不把数字/JSON 自动转成字符串 |
-| getIntegerEvaluation(key, defaultValue: Int, context: EvaluationContext?) | ProviderEvaluation&lt;Int&gt; | number 类型，Double 转 Int，向零截断、越界饱和 |
-| getLongEvaluation(key, defaultValue: Long, context: EvaluationContext?) | ProviderEvaluation&lt;Long&gt; | number 类型，Double 转 Long，允许精度损失、截断和饱和 |
-| getDoubleEvaluation(key, defaultValue: Double, context: EvaluationContext?) | ProviderEvaluation&lt;Double&gt; | number 类型，有限 Double |
-| getObjectEvaluation(key, defaultValue: Value, context: EvaluationContext?) | ProviderEvaluation&lt;Value&gt; | json 类型；递归映射 JSON 对象、数组及合法 JSON 标量 |
-| track(trackingEventName, context: EvaluationContext?, details: TrackingEventDetails?) | Unit | 校验当前身份，数值转有限 Double，接受精度损失；结构详情不发送；首版实现 |
-| observe() | Flow&lt;OpenFeatureProviderEvents&gt; | 共享事件源，不设订阅人数硬上限，每订阅者缓冲有界；不重复安装 SDK 监听 |
-| shutdown() | Unit，非 suspend | 同步关闭准入并发起异步释放；不能阻塞主线程等待 SDK close |
+| metadata | ProviderMetadata | Stable name `FeatBit` |
+| hooks | List&lt;Hook&lt;*&gt;&gt; | Empty in the first release; OpenFeature manages application hooks |
+| initialize(initialContext: EvaluationContext?) | suspend Unit | Map identity, create the SDK, install subscriptions, and await readiness; throw OpenFeatureError on failure |
+| onContextSet(oldContext: EvaluationContext?, newContext: EvaluationContext) | suspend Unit | Validate and switch the current user, then await readiness; equal-valued contexts are accepted |
+| getBooleanEvaluation(key, defaultValue: Boolean, context: EvaluationContext?) | ProviderEvaluation&lt;Boolean&gt; | Strict boolean parsing |
+| getStringEvaluation(key, defaultValue: String, context: EvaluationContext?) | ProviderEvaluation&lt;String&gt; | Require string; do not convert numbers/JSON to strings |
+| getIntegerEvaluation(key, defaultValue: Int, context: EvaluationContext?) | ProviderEvaluation&lt;Int&gt; | Require number; convert Double to Int with truncation toward zero and saturation |
+| getLongEvaluation(key, defaultValue: Long, context: EvaluationContext?) | ProviderEvaluation&lt;Long&gt; | Require number; convert Double to Long, permitting precision loss, truncation, and saturation |
+| getDoubleEvaluation(key, defaultValue: Double, context: EvaluationContext?) | ProviderEvaluation&lt;Double&gt; | Require number and a finite Double |
+| getObjectEvaluation(key, defaultValue: Value, context: EvaluationContext?) | ProviderEvaluation&lt;Value&gt; | Require json; recursively map JSON objects, arrays, and valid scalars |
+| track(trackingEventName, context: EvaluationContext?, details: TrackingEventDetails?) | Unit | Validate the current identity; convert numbers to finite Double values with possible precision loss; omit structured details; included in the first release |
+| observe() | Flow&lt;OpenFeatureProviderEvents&gt; | Shared event source, no subscriber-count limit, bounded per-subscriber buffering, and no duplicate SDK listeners |
+| shutdown() | Unit, not suspend | Close admission synchronously and start asynchronous cleanup; do not block the main thread waiting for SDK close |
 
-所有评估方法的 key 类型为 String。默认值的类型与返回值一致；`getObjectEvaluation` 的 Value 是 OpenFeature Value。应用通常调用 OpenFeature Client 的 Value/Details 方法，而不是直接调用上表 provider 方法。
+All evaluation keys are String. Each default has the same type as the corresponding result; getObjectEvaluation uses OpenFeature Value. Applications normally call the OpenFeature Client's Value/Details methods rather than the provider methods directly.
 
-## 4. FeatBit 专属扩展
+## 4. FeatBit extensions
 
-| API | 返回类型 | 用途与约束 |
+| API | Return type | Purpose and constraints |
 | --- | --- | --- |
-| getConnectionInformation() | ConnectionInformation? | 创建成功前为 null；创建后提供 SDK 当前连接快照，不替代 OpenFeature 状态 |
-| setOffline(timeoutMillis: Long) | Operation&lt;ModeResult&gt; | 与身份变更串行提交；timeout 包含排队；失败后按实际模式恢复读取 |
-| setOnline(timeoutMillis: Long) | Operation&lt;ModeResult&gt; | timeout 包含排队；操作结果与实际模式/readiness 分别处理 |
-| flush() | Operation&lt;FlushResult&gt; | 保留 EMPTY/ALL_DELIVERED/PROCESSED_WITH_LOSS 和失败 Outcome；对外预算为 requestTimeoutMillis，包含排队 |
-| clearCache(scope: CacheScope, timeoutMillis: Long) | Operation&lt;CacheClearResult&gt; | 沿用 SDK 范围与结果；timeout 包含排队，提交后超时不保证清理未发生 |
-| close() | Operation&lt;CloseResult&gt; | 同 shutdown 的释放路径，可观察 undeliveredEvents/cleanupComplete；重复调用返回同一操作 |
+| getConnectionInformation() | ConnectionInformation? | Null before successful creation; afterwards, the current SDK snapshot, not a replacement for OpenFeature status |
+| setOffline(timeoutMillis: Long) | Operation&lt;ModeResult&gt; | Serialize submission with identity changes; include queueing in the timeout; recover reads from actual mode after failure |
+| setOnline(timeoutMillis: Long) | Operation&lt;ModeResult&gt; | Include queueing; treat the operation result separately from actual mode/readiness |
+| flush() | Operation&lt;FlushResult&gt; | Preserve EMPTY/ALL_DELIVERED/PROCESSED_WITH_LOSS and failure Outcomes; external budget is requestTimeoutMillis, including queueing |
+| clearCache(scope: CacheScope, timeoutMillis: Long) | Operation&lt;CacheClearResult&gt; | Retain SDK scopes/results; include queueing; a post-submission timeout does not prove the cache was not cleared |
+| close() | Operation&lt;CloseResult&gt; | Same cleanup path as shutdown, with observable undeliveredEvents/cleanupComplete; repeated calls return the same operation |
 
-扩展操作从 provider 接受调用时开始计算预算；提交前超时不再执行，提交后超时不取消核心工作。模式操作失败不代表模式未变，owner 重新读取实际模式并恢复当前合法身份的准入；原操作结果不因此改成成功。完整规则见[排队与超时](./architecture.md#扩展操作的排队与超时)。
+Budgets start when the provider accepts a call. Do not submit work that expires before submission; a timeout afterwards does not cancel core work. A failed mode operation does not prove the mode stayed unchanged. The owner reads actual mode and restores admission for the current valid identity without changing the original failure into success. See [queueing and timeouts](./architecture.md#extension-operation-queueing-and-timeouts).
 
-client 尚未创建/订阅尚未安装时调用上述操作，除 close 外返回已完成的失败 Operation，采用 INVALID + `provider_not_initialized`；关闭后采用 CLOSED。创建完成但等待远端 ready 超时时允许 offline/online、flush 等操作恢复，不把“initialize 调用已成功返回”作为前置条件。clearCache 仅允许稳定身份，其他状态边界见[状态表](./architecture.md#4-状态机)。getConnectionInformation 在关闭后可返回已保存的最终 CLOSED 快照。
+Before client creation/subscription installation, extensions other than close return a completed INVALID operation with `provider_not_initialized`; after closing, they return CLOSED. If creation succeeded but remote readiness timed out, offline/online, flush, and other recovery operations remain available. A successful return from initialize is not a prerequisite. clearCache requires a stable identity; other boundaries are in the [state table](./architecture.md#4-state-machine). getConnectionInformation may return a retained final CLOSED snapshot after shutdown.
 
-close 在 SDK 尚未创建时也必须有效：阻止后续初始化，等待或清理晚到的创建结果，避免泄漏。不得先宣称 cleanupComplete=true 再留下晚到客户端。返回时间预算内不能确认清理时，明确失败或 cleanupComplete=false，继续处理晚到清理。
+close must also work before SDK creation: prevent subsequent initialization, await or clean up late creation results, and avoid leaks. Never report cleanupComplete=true while leaving a late client unowned. If cleanup cannot be confirmed within the budget, report failure or cleanupComplete=false and continue late cleanup.
 
-不公开 getClient、identify、identifyAnonymous、resetAnonymousIdentity：这些能力绕过 OpenFeature 上下文会破坏身份与事件的一致性。匿名 reset 暂不提供；退出登录通过设置空上下文回到持久化匿名身份，回到同一匿名身份不代表创建新匿名 ID。
+Do not expose getClient, identify, identifyAnonymous, or resetAnonymousIdentity: they bypass OpenFeature context and break identity/event consistency. Anonymous reset is not provided initially. Logging out sets an empty context and returns to the persisted anonymous identity; returning to it does not create a new anonymous ID.
 
-## 5. 应用使用流程
+## 5. Application workflow
 
-1. 用 factory 配置 FeatBit 的端点、凭据、事件和缓存，factory 将传入 User 放入 ClientOptions。
-2. 构建 FeatBitProvider，构造 OpenFeature ImmutableContext，将用户 ID 放入 targetingKey。
-3. 用 OpenFeature setProviderAndWait 注册并等待；同时检查 OpenFeature 状态。当前上游会把初始化异常转换为状态，不能把“调用返回”单独当作成功。
-4. 获取 OpenFeature Client，使用六类 Value/Details 方法和 track。
-5. 登录、属性变化或退出登录通过 OpenFeature setEvaluationContext 触发；依赖状态/事件判断完成，不用任意延时。
-6. 必要时通过 provider.flush/close 观察异步结果。OpenFeature shutdown 会调用 provider.shutdown，但不意味着 FeatBit 事件已全部送达。
+1. Configure FeatBit endpoints, credentials, events, and cache through the factory, using the supplied User in ClientOptions.
+2. Build FeatBitProvider and an OpenFeature ImmutableContext with the user ID as targetingKey.
+3. Register and wait with OpenFeature setProviderAndWait, and inspect status. Upstream converts initialization exceptions into status, so return alone does not prove success.
+4. Obtain an OpenFeature Client and use its six Value/Details methods and track.
+5. Trigger login, attribute changes, or logout through OpenFeature setEvaluationContext. Use status/events to determine completion instead of arbitrary delays.
+6. Observe provider.flush/close when needed. OpenFeature shutdown calls provider.shutdown but does not imply that all FeatBit events have been delivered.
 
-Kotlin 用户可以使用现有 ClientAdapters.await 等待扩展 Operation；Java 用户通过 Operation.observe。OpenFeature 自身的协程入口不额外复制成一套 Java OpenFeature SDK。
+Kotlin callers can use the existing ClientAdapters.await for extension Operations; Java callers use Operation.observe. The provider does not duplicate OpenFeature's coroutine entry points as another Java OpenFeature SDK.
 
-## 6. 详细设计依赖
+## 6. Detailed design dependencies
 
-新增 provider 公共类型仍保持本页的三种；核心依赖固定为已发布的 `co.featbit:featbit-client-android:0.2.0`。身份方法直接通过 FeatBitClient 对接，评估复用现有 Detail 方法，保留 Double 数值模型，详见[核心接入契约](./core-sdk-contract.md)，不再需要新增核心接口。OpenFeature 0.9.0 是开发和问题复现基线，完整状态保证需要包含[初始化状态仲裁修正](./architecture.md#10-openfeature-v090-的状态交接限制)的依赖版本，正式最低版本由 G02 验证确定。
+The provider adds only the three public types listed above. The core dependency is the released `co.featbit:featbit-client-android:0.2.0`. Identity methods are directly available on FeatBitClient; evaluations reuse existing Detail methods and retain the Double model. No additional core interfaces are required; see the [core contract](./core-sdk-contract.md). OpenFeature 0.9.0 is the development/reproduction baseline. Complete status guarantees require a dependency containing the [initialization status arbitration fix](./architecture.md#10-openfeature-v090-status-handoff-limitations); G02 determines the final minimum release version.

@@ -1,0 +1,15 @@
+<resources>
+<color name="cafe_surface">#FFFCFA</color>
+<color name="cafe_text">#141821</color>
+<color name="cafe_muted">#596170</color>
+<color name="cafe_primary">#703D1C</color>
+<color name="cafe_on_primary">#FFFFFF</color>
+<color name="cafe_tonal">#FAEAD8</color>
+<color name="cafe_outline">#DDD7D1</color>
+<color name="cafe_panel">#F7F4F1</color>
+<color name="cafe_good_bg">#E8F3E7</color>
+<color name="cafe_good">#19622B</color>
+<color name="cafe_warn_bg">#FFF0D3</color>
+<color name="cafe_warn">#714900</color>
+<color name="cafe_error">#B3261E</color>
+</resources>

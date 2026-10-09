@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:name=".CafeApplication" android:label="@string/launcher_name" android:icon="@drawable/ic_coffee"
+        android:usesCleartextTraffic="true" android:allowBackup="false" android:supportsRtl="true" android:theme="@style/Theme.Cafe">
+        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+        </activity>
+    </application>
+</manifest>

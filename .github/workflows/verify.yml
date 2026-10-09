@@ -11,6 +11,15 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
       - run: python3 tools/acceptance.py
+      - name: Build and verify Cafe samples
+        run: >-
+          bash gradlew -p samples
+          :kotlin:assembleDebug :java:assembleDebug
+          :kotlin:assembleRelease :java:assembleRelease
+          :kotlin:testDebugUnitTest :java:testDebugUnitTest
+          :kotlin:lintDebug :java:lintDebug
+          :kotlin:lintRelease :java:lintRelease
+          :kotlin:assembleDebugAndroidTest :java:assembleDebugAndroidTest
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -19,3 +28,7 @@ jobs:
             build/acceptance/
             provider/build/reports/
             provider/build/outputs/aar/
+            samples/kotlin/build/reports/
+            samples/java/build/reports/
+            samples/kotlin/build/outputs/apk/
+            samples/java/build/outputs/apk/

@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T14:33:07.0012588Z",
+  "title": "Design System: FeatBit Café",
+  "extensions": {
+    "nativePlatform": {
+      "toolkit": "Android Views with Material3 DayNight controls",
+      "dimensions": "dp",
+      "typography": "sp",
+      "source": "shared/res and shared/assets; independent Kotlin and Java native integration",
+      "previews": "Native component descriptions only. HTML/CSS translation cannot reproduce Android layout, font scaling, accessibility targets, ripple or focus behavior.",
+      "colorRamps": "No extracted tonal ramp exists. Day/night semantic resources are not a tonal scale; no synthetic colors are normative.",
+      "nightResources": "shared/res/values-night/colors.xml and shared/res/values-night/themes.xml"
+    },
+    "shadows": [
+      {
+        "name": "bottom-navigation",
+        "value": "0dp",
+        "purpose": "Bottom navigation is explicitly flat. Other control elevations remain native Material behavior."
+      }
+    ],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "navigation-rail",
+        "value": "600dp"
+      }
+    ],
+    "reflow": {
+      "largeText": "fontScale > 1.15",
+      "contentWidth": "min(620dp, screenWidthDp - 80dp) on wide screens",
+      "sizeChoices": "Vertical for large text, more than three choices, or a label longer than twelve characters"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Native Material button, sentence case, 14sp, at least 48dp tall; espresso fill with on-primary text and native focus/ripple."
+    },
+    {
+      "name": "Outlined action",
+      "kind": "button",
+      "description": "Native outlined Material button for secondary actions; inherits theme states with the same accessible target and text scale."
+    },
+    {
+      "name": "Outlined field",
+      "kind": "input",
+      "description": "Material TextInputLayout/TextInputEditText, 14sp, native inline errors; credential visibility toggle; multiline JSON uses monospace."
+    },
+    {
+      "name": "Demo / Flags / Inspect",
+      "kind": "nav",
+      "description": "72dp bottom navigation on phones; native rail at 600dp; primary checked ink, muted unchecked ink and tonal active indicator."
+    },
+    {
+      "name": "Status badge",
+      "kind": "chip",
+      "description": "Rounded semantic badge with explicit readable state text. Invocation never implies remote delivery."
+    },
+    {
+      "name": "Checkout",
+      "kind": "card",
+      "refersTo": "checkout",
+      "description": "Outlined warm surface containing amount and action; vertical reflow at large text. Classic keeps actions above navigation."
+    },
+    {
+      "name": "Warning note",
+      "kind": "custom",
+      "refersTo": "warning",
+      "description": "Amber note combines an icon and wrapping text, with polite accessibility announcements."
+    },
+    {
+      "name": "Cached evaluation row",
+      "kind": "custom",
+      "description": "Native selectable row, at least 56dp tall, 24dp chevron. Cached typed OpenFeature value and fallback error code lead into detail evaluation."
+    }
+  ],
+  "narrative": {
+    "northStar": "FeatBit Café",
+    "overview": "Warm neutral surfaces, espresso actions, restrained status colors, native Android controls, and the approved coffee photograph define the implemented visual system. Roboto on the reviewed Android environment keeps the interface familiar and readable. The photograph and purchase preview provide the café character; diagnostic content remains compact and clear.\r\n\r\nThis system is implemented by the Kotlin and Java samples, both using the same shared resources and assets. It does not supersede [README.md](./README.md), [interaction-design.md](./interaction-design.md), or [setup-and-acceptance.md](./setup-and-acceptance.md). Those documents and the approved `ui-overview-v2.png`, `ui-checkout.png`, `ui-connection-users.png`, `ui-flag-editing.png`, and `ui-connection-fallback-proposal.png` remain the product and composition authority. [PRODUCT.md](./PRODUCT.md) records that direction.",
+    "keyCharacteristics": [
+      "Warm surfaces and espresso action emphasis.",
+      "A real coffee photograph preserved from the approved asset.",
+      "Native Views, Material controls, and visible state labels.",
+      "Scrollable content and platform adaptations for larger text and tablets."
+    ],
+    "rules": [
+      {
+        "name": "The Evidence Rule",
+        "body": "Color accompanies the actual state label; green must not imply remote confirmation or delivery beyond the documented outcome.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** preserve the approved café palette, photo, and product contract across the Kotlin and Java samples.",
+      "**Do** keep dimensions in dp, text in sp, and primary controls at least 48dp tall.",
+      "**Do** use native screenshots to assess native rendering, including night and larger text."
+    ],
+    "donts": [
+      "**Don't** turn conceptual artwork into an all-device pixel-exact claim.",
+      "**Don't** invent web tokens, bespoke shadows, or animation timings for inherited Material behavior.",
+      "**Don't** infer live-service verification or screenshot coverage from implementation parity; report only evidence actually obtained for each sample."
+    ]
+  }
+}

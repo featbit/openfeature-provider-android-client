@@ -1,0 +1,6 @@
+[
+ {"key":"sample-new-checkout","type":"BOOLEAN","initial":"true","fallback":"false"},
+ {"key":"sample-promo-message","type":"STRING","initial":"A little treat, on us.","fallback":"Fresh coffee, made for you."},
+ {"key":"sample-discount-percent","type":"NUMBER","initial":"10","fallback":"0"},
+ {"key":"sample-menu-config","type":"JSON","initial":"{\"sizes\":[{\"id\":\"small\",\"label\":\"Small\"},{\"id\":\"regular\",\"label\":\"Regular\"},{\"id\":\"large\",\"label\":\"Large\"}],\"defaultSize\":\"regular\"}","fallback":"{\"sizes\":[{\"id\":\"small\",\"label\":\"Small\"},{\"id\":\"regular\",\"label\":\"Regular\"},{\"id\":\"large\",\"label\":\"Large\"}],\"defaultSize\":\"regular\"}"}
+]

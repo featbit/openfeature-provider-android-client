@@ -1,66 +1,66 @@
-# 核心 SDK 评估与身份契约
+# Core SDK Evaluation and Identity Contract
 
-状态：2026-10-06 核心 SDK 0.2.0 已正式发布并完成公开下载、签名及独立消费验证。Provider 固定依赖 `co.featbit:featbit-client-android:0.2.0`，发布源码为 `7210251fbe5e3f9f452ef15e370da265f1009702`。本页描述已具备的核心接入契约，采用用户确定的 LaunchDarkly 风格类型与数值策略；替代此前 resolveDetail、ResolutionResult、ResolvedValue 和精确 JsonValue 的方案，不再要求这些新增 API。Provider 已使用公开 API 实现接入，生产代码禁止引用核心 internal。发布证据见[实施基线](./implementation-plan.md#1-本次核对的基线)。
+Status: core SDK 0.2.0 was officially released on 2026-10-06 and passed public-download, signature, and independent-consumer verification. The provider pins `co.featbit:featbit-client-android:0.2.0`, whose release source is `7210251fbe5e3f9f452ef15e370da265f1009702`. This document describes the available integration contract and the agreed LaunchDarkly-style type/numeric policy. It replaces the earlier resolveDetail, ResolutionResult, ResolvedValue, and exact JsonValue proposals; those additions are no longer required. Provider integration uses public APIs; production code must not reference core internal APIs. See the [implementation baseline](./implementation-plan.md#1-reviewed-baselines) for release evidence.
 
-## 1. 复用公开评估 API
+## 1. Reuse public evaluation APIs
 
-普通方法及 Detail 方法采用相同的类型规则，Provider 使用 Detail 结果判断成功或失败，不通过返回值是否等于 fallback 判断。
+Ordinary and Detail methods follow the same type rules. The provider uses the Detail result to determine success/failure, not equality between the returned value and fallback.
 
-| Provider 请求 | 核心调用 | 行为 |
+| Provider request | Core call | Behavior |
 | --- | --- | --- |
-| Boolean | boolVariationDetail | 只接受 boolean 声明 |
-| String | stringVariationDetail | 只接受 string 声明，不自动序列化其他类型 |
-| Int / Long / Double | numberVariationDetail | 只接受 number 声明，先解析为有限 Double |
-| Object | jsonVariationDetail | 只接受 json 声明，返回 FbValue 树，数字为 Double |
+| Boolean | boolVariationDetail | Accept only a boolean declaration |
+| String | stringVariationDetail | Accept only a string declaration; do not automatically serialize other types |
+| Int / Long / Double | numberVariationDetail | Accept only a number declaration, parsed first as finite Double |
+| Object | jsonVariationDetail | Accept only a json declaration; return an FbValue tree with Double numbers |
 
-核心通用 variation/variationDetail 按声明类型解析，不要求结果与 fallback.kind 一致。专用 jsonTextVariation 要求 json 声明，但保留原始文本，不验证 JSON 语法。allVariations 保留原文且不收集事件。
+Generic variation/variationDetail parse according to the declaration and do not require the result to match fallback.kind. Specialized jsonTextVariation requires a json declaration but preserves raw text without validating JSON syntax. allVariations preserves raw text and does not collect events.
 
-## 2. 数值与错误映射
+## 2. Numeric and error mappings
 
-保留现有 FbValue 与 Double 模型，不增加精确整数或 JSON 数字树。Provider 仅在 numberVariationDetail 成功后执行 Double.toInt()/toLong()：小数向零截断，越界按 JVM/Kotlin 转换饱和到边界；不承诺完整 Long 精度，不事后追加整数性、安全整数范围或精度检查。Double 解析失败或非有限值由核心返回 WRONG_TYPE。
+Retain the existing FbValue/Double model without adding exact integers or a JSON numeric tree. The provider calls Double.toInt()/toLong() only after numberVariationDetail succeeds: truncate fractions toward zero and saturate out-of-range values at JVM/Kotlin boundaries. Do not promise full Long precision or add post-evaluation integer, safe-integer-range, or precision checks. The core returns WRONG_TYPE for Double parse failures and nonfinite results.
 
-JSON 数字也保持 Double；映射到 OpenFeature Value 时使用 Double 数字，不声称保留原文整数精度。JSON null、数组和对象按现有不可变 FbValue 模型递归映射。调用者提供的 OpenFeature fallback 在失败时原样保留，不先转成 Double 或 FbValue 再返回，避免破坏 Long 或复杂默认值。
+JSON numbers also remain Double and map to OpenFeature Double values without claiming preservation of original integer precision. Recursively map JSON null, arrays, and objects from immutable FbValue. Preserve the caller's original OpenFeature fallback on failure instead of converting it through Double or FbValue, which could alter Long or complex defaults.
 
-| 核心 reason | Provider 处理 |
+| Core reason | Provider handling |
 | --- | --- |
-| MATCH | 返回转换后的值；缺少可靠来源信息时 reason=UNKNOWN、variant=null |
-| WRONG_TYPE | TYPE_MISMATCH，保留原始 default；现有 API 不区分声明错误和内容解析错误，不猜测 PARSE_ERROR |
-| FLAG_NOT_FOUND | FLAG_NOT_FOUND，保留原始 default |
-| CLIENT_NOT_READY | PROVIDER_NOT_READY，保留原始 default |
-| ERROR | GENERAL，保留原始 default |
+| MATCH | Return the converted value; without reliable origin information, use reason=UNKNOWN and variant=null |
+| WRONG_TYPE | TYPE_MISMATCH with the original default; the API does not distinguish declaration errors from content parse failures, so do not guess PARSE_ERROR |
+| FLAG_NOT_FOUND | FLAG_NOT_FOUND with the original default |
+| CLIENT_NOT_READY | PROVIDER_NOT_READY with the original default |
+| ERROR | GENERAL with the original default |
 
-关闭、终止和上下文可用性由 Provider 生命周期门禁检查；不把核心保留的关闭后本地读取行为当作 Provider Ready。
+The provider lifecycle gate checks closing, termination, and context availability. Core support for local reads after close does not establish Provider Ready.
 
-## 3. 同一评估中的类型判断与事件
+## 3. Type checks and events within one evaluation
 
-1. 从核心不可变 view 读取当前记录。
-2. 在 gate 外检查声明类型并解析；类型或解析失败保留为本次候选结果。
-3. 回到 gate 确认 view 未变化；成功和失败都重试已过时的快照。
-4. 对当前已确认的远端记录，沿用元数据、禁用、离线、关闭、去重和容量规则尝试准入事件。失败评估不自动禁止事件。
-5. 返回成功值或原始 fallback + WRONG_TYPE。普通方法返回其中的 value。
+1. Read the current record from the core's immutable view.
+2. Check the declared type and parse outside the gate, retaining type/parse failures as candidate results.
+3. Reenter the gate and confirm the view has not changed; retry stale snapshots on both success and failure paths.
+4. For a currently confirmed remote record, attempt event admission under existing metadata, disabling, offline, closing, deduplication, and capacity rules. Evaluation failure does not automatically prohibit an event.
+5. Return the successful value or the original fallback + WRONG_TYPE. Ordinary methods return its value.
 
-事件描述服务端选中的 variation，不代表应用一定使用了它。FeatBit 现有协议没有本地类型错误原因或调用者 fallback 字段，本次不扩展协议、不伪造 variationId、不以 fallback 替换选中值。找不到 flag、归档、bootstrap、未确认缓存和本地源仍不产生此类评估事件。Provider 不补发或撤销核心事件。
+The event describes the variation selected by the server, not proof that the application used it. The FeatBit protocol has no local type-error reason or caller-fallback fields. Do not extend the protocol, fabricate variationId, or replace the selected value with a fallback. Missing/archived flags, bootstrap, unconfirmed cache, and local sources still do not produce these evaluation events. The provider neither duplicates nor retracts core events.
 
-## 4. Java/Kotlin 兼容边界
+## 4. Java/Kotlin compatibility boundaries
 
-核心继续采用 Kotlin 实现、Java 可调用的公开 API。identifyContext 和 identifyAnonymousContext 直接属于 FeatBitClient，返回 IdentityReceipt；无需额外能力接口或类型转换。核心版本通过 Maven 精确依赖锁定，不能误用尚未包含声明类型检查的旧版。第三方 FeatBitClient 实现必须遵守这些契约。
+The core remains a Kotlin implementation with Java-compatible public APIs. identifyContext and identifyAnonymousContext are direct FeatBitClient methods returning IdentityReceipt; no capability interface or cast is needed. Pin the exact Maven core version to avoid accidentally using a version without declared-type checks. Third-party FeatBitClient implementations must honor these contracts.
 
-## 5. 身份采用回执协议
+## 5. Identity-adoption receipt protocol
 
-identify 与 identifyAnonymous 都在后台准备并采用身份，再等待 ready。两者返回 TIMED_OUT 时，仅凭该结果不能判断采用是否已经发生。
+Both identify and identifyAnonymous prepare/adopt identity in the background and then await readiness. A TIMED_OUT result alone cannot determine whether adoption already occurred.
 
-0.2.0 的两项 Context 接口把采用操作单独结算：
+The two Context APIs in 0.2.0 settle adoption separately:
 
-1. 校验输入及 timeout、容量，建立 identity 请求序号；新请求可取代旧匿名准备。
-2. 具名路径复用 enrich/contextKey；匿名路径复用持久化 repository.prepare/withCurrent，禁止 provider 创建匿名 ID。
-3. 同一 gate 内确认仍是最新请求、未 close、未到采用 deadline；执行 adopt，生成 IdentityReceipt 并同步 settle SUCCESS。
-4. 结果回调延迟不能把已成功采用改为 TIMED_OUT；Operation.getResult 始终保留成功回执。
-5. deadline 先到、存储失败或被取代而未采用时 settle 对应失败，晚到准备不得再 adopt。若已 SUCCESS 后才出现新请求，保留原 SUCCESS，它只证明曾采用，不证明仍是当前身份。
+1. Validate input, timeout, and capacity, and allocate an identity request sequence; a newer request may supersede older anonymous preparation.
+2. The named path reuses enrich/contextKey; the anonymous path reuses persisted repository.prepare/withCurrent. The provider must not create anonymous IDs.
+3. Under the same gate, verify that the request is still latest, the client is not closing, and the adoption deadline has not passed. Adopt, create IdentityReceipt, and synchronously settle SUCCESS.
+4. Delayed callback delivery cannot turn successful adoption into TIMED_OUT. Operation.getResult retains the successful receipt.
+5. If the deadline, storage failure, or supersession wins before adoption, settle the corresponding failure and prohibit late preparation from adopting. If a new request arrives after SUCCESS, retain the original SUCCESS: it proves prior adoption, not that the identity is still current.
 
-Provider 对回执再检查自己的 RequestToken；它只对“当前请求的成功回执”设置 adoptedContext，然后另发 awaitReady。mode、后台、缓存命中、远端恢复不会创造身份回执。收到 SUCCESS 不等于 flag 可评估。
+The provider additionally checks its RequestToken and sets adoptedContext only for a successful receipt belonging to the current request, then separately calls awaitReady. Mode changes, background state, cache hits, and remote recovery do not create identity receipts. SUCCESS does not mean flags are ready for evaluation.
 
-这两项接口的 timeout 只限制身份准备/采用，不包括等待远端数据；provider 的整体生命周期预算另行计算。操作成功可在调用返回前发生，但 observe 必须沿用核心异步回调契约。
+These API timeouts cover identity preparation/adoption only, excluding remote data readiness. The provider calculates a separate overall lifecycle budget. An operation may succeed before its method returns, but observe must retain the core asynchronous callback contract.
 
-## 6. 验证边界
+## 6. Verification boundaries
 
-核心验证覆盖声明类型不匹配、普通/Detail 一致、通用 fallback 类型无关、Double 舍入、错误评估事件、来源和元数据限制。Provider 后续还必须验证 Int/Long 截断和饱和、原始 default 保留、JSON 映射、error hooks、身份租约与关闭竞态。核心测试通过不代表 Provider 已完成或已发布。
+Core verification covers declared-type mismatches, ordinary/Detail consistency, generic fallback-kind independence, Double rounding, failed-evaluation events, and origin/metadata restrictions. Provider verification must additionally cover Int/Long truncation and saturation, original defaults, JSON mappings, error hooks, identity leases, and close races. Passing core tests does not establish provider completion or release readiness.

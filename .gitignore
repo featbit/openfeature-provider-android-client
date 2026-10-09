@@ -31,3 +31,7 @@ local.properties
 .idea/
 *.iml
 !gradle/wrapper/gradle-wrapper.jar
+
+# Local native sample review captures
+.impeccable/review/
+!samples/gradle/wrapper/gradle-wrapper.jar

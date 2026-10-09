@@ -1,0 +1,9 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@color/cafe_surface">
+<com.google.android.material.appbar.MaterialToolbar android:id="@+id/toolbar" android:layout_width="match_parent" android:layout_height="56dp" app:titleTextColor="@color/cafe_text" app:titleTextAppearance="@style/Cafe.Title"/>
+<LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
+<com.google.android.material.navigationrail.NavigationRailView android:id="@+id/rail" android:layout_width="wrap_content" android:layout_height="match_parent" android:visibility="gone" app:menu="@menu/navigation"/>
+<FrameLayout android:id="@+id/page_host" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
+</LinearLayout>
+<LinearLayout android:id="@+id/classic_actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone"/>
+<com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/navigation" android:layout_width="match_parent" android:layout_height="72dp" app:menu="@menu/navigation" app:labelVisibilityMode="labeled" app:itemActiveIndicatorStyle="@style/Widget.Material3.BottomNavigationView.ActiveIndicator" android:background="@color/cafe_surface" app:elevation="0dp"/>
+</LinearLayout>

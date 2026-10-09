@@ -7,15 +7,24 @@ plugins {
 spotless {
     lineEndings = com.diffplug.spotless.LineEnding.UNIX
     java {
-        target("consumer-tests/java/src/**/*.java")
+        target("consumer-tests/java/src/**/*.java", "samples/java/src/**/*.java")
         googleJavaFormat("1.24.0").aosp()
     }
     kotlin {
-        target("provider/src/**/*.kt", "consumer-tests/kotlin/src/**/*.kt")
+        target(
+            "provider/src/**/*.kt",
+            "consumer-tests/kotlin/src/**/*.kt",
+            "samples/kotlin/src/**/*.kt",
+        )
         ktfmt("0.54").kotlinlangStyle()
     }
     kotlinGradle {
-        target("*.gradle.kts", "provider/*.gradle.kts", "consumer-tests/**/*.gradle.kts")
+        target(
+            "*.gradle.kts",
+            "provider/*.gradle.kts",
+            "consumer-tests/**/*.gradle.kts",
+            "samples/**/*.gradle.kts",
+        )
         ktfmt("0.54").kotlinlangStyle()
     }
 }
