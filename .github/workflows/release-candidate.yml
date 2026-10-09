@@ -14,10 +14,13 @@ concurrency:
 jobs:
   stage:
     runs-on: ubuntu-latest
+    # Keep environment approval/tag rules; credentials are shared organization secrets.
     environment: release
     steps:
       - uses: actions/checkout@v4
-      - name: Check release credentials
+      # Grant this repository access to all four organization secrets.
+      # Remove same-name repository/environment secrets: GitHub gives them precedence.
+      - name: Check shared release credentials
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
@@ -29,7 +32,8 @@ jobs:
           names = ('SIGNING_KEY', 'SIGNING_PASSWORD', 'CENTRAL_TOKEN_USERNAME', 'CENTRAL_TOKEN_PASSWORD')
           missing = [name for name in names if not os.environ.get(name)]
           if missing:
-              raise SystemExit('Missing release environment secrets: ' + ', '.join(missing))
+              raise SystemExit('Missing release secrets: ' + ', '.join(missing) +
+                               '. Grant this repository access to the organization secrets.')
           PY
       - uses: actions/setup-java@v4
         with:

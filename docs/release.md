@@ -6,7 +6,7 @@ This workflow is release infrastructure, not release approval. OpenFeature 0.9.0
 
 ## Credentials and repository setup
 
-Create a GitHub Environment named `release`, with any required reviewer/tag protection rules. Configure these four **Secrets**, using the same names as the Android SDK:
+Keep a GitHub Environment named `release` for reviewer/tag protection rules. Configure these four **organization Actions Secrets** under organization Settings > Secrets and variables > Actions. Use selected-repository access and authorize both `featbit-android-client-sdk` and `openfeature-provider-android-client`:
 
 | Secret | Value |
 | --- | --- |
@@ -15,7 +15,7 @@ Create a GitHub Environment named `release`, with any required reviewer/tag prot
 | `CENTRAL_TOKEN_USERNAME` | Username from a Central Portal user token. |
 | `CENTRAL_TOKEN_PASSWORD` | Password from that same user token. |
 
-The Central account must have publishing rights for `co.featbit`, and the signing public key must be discoverable as required by Central. These are environment secrets, not plain Variables. Never commit them. Normal builds and acceptance runs require no credentials. Gradle loads the PGP key in memory only when `-PsignPublication=true` is requested.
+The Central account must have publishing rights for `co.featbit`, and the signing public key must be discoverable as required by Central. These are organization Secrets, not Variables. Remove same-name repository and `release` environment secrets so they do not override organization values. The workflow uses the standard `secrets` context; GitHub does not provide an organization-only selector. Environment approval protects this release job, but organization secrets are also available to other eligible workflows in authorized repositories. Never commit them. Normal builds and acceptance runs require no credentials. Gradle loads the PGP key in memory only when `-PsignPublication=true` is requested.
 
 ## Version and artifacts
 
