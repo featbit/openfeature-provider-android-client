@@ -45,7 +45,7 @@ onContextSet 先以短临界区设置新请求 token 和切换屏障，锁外校
 
 ## 4. 严格评估与数值
 
-2026-10-06 已发布的核心 SDK 0.2.0 采用统一声明类型检查和 Double 数值模型，见[核心 SDK 契约](./core-sdk-contract.md)；Provider 映射仍待实现。
+2026-10-06 已发布的核心 SDK 0.2.0 采用统一声明类型检查和 Double 数值模型，见[核心 SDK 契约](./core-sdk-contract.md)；Provider 映射已实现，测试证据见[验证记录](./verification.md)。
 
 | OpenFeature 方法 | FeatBit variationType | 转换规则 |
 | --- | --- | --- |

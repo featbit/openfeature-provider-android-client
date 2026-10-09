@@ -20,7 +20,7 @@ FeatBit 0.2.0 的 G01 核心前置条件已满足：
 - 核心 155 项测试及 Java、Kotlin 1.9.24/1.9.25/2.2.10 独立产物矩阵通过；发布后以新依赖缓存从 Central 下载的 Java/Kotlin 消费项目也通过 Debug、Release/R8 构建、单元测试及 lint。该次公开下载验证没有重跑设备或真实服务检查。
 - 详细证据保存在核心的[发布验证记录](https://github.com/featbit/featbit-android-client-sdk/blob/dc351c6aa58c39fa594968e17ee6a5a2bde9049b/docs/verification.md#maven-central-020-publication--2026-10-06)。
 
-这些证据确认核心依赖可用，不等于 Provider 已通过测试。OpenFeature 的 G02 尚未通过；0.9.0 与上述 main 的状态仲裁实现相同，目前只有源码时序分析，本项目尚未运行最小复现。Provider 与两项依赖组合后的编译、运行时和 Android 兼容性仍须单独验收。
+这些证据确认核心依赖可用，不等于 Provider 已通过测试。OpenFeature 的 G02 尚未通过；0.9.0 与上述 main 的状态仲裁实现相同，本项目已执行最小复现并确认缺陷，见[验证记录](./verification.md)。Provider 与两项依赖组合后的编译、运行时和 Android 兼容性仍须单独验收。
 
 ### OpenFeature 精确源码入口
 
@@ -47,20 +47,20 @@ FeatBit 0.2.0 的 G01 核心前置条件已满足：
 
 核心普通方法和 Detail 方法统一检查声明类型，Provider 复用 bool/string/number/jsonVariationDetail。保留 Double/FbValue 数值模型：Int/Long 从 Double 转换，允许截断和边界饱和，不承诺完整 Long 精度。类型和解析失败仍可能收集选中的远端 variation 事件；不扩展服务端错误事件字段。撤销新增 resolveDetail 和精确数值树的方案。
 
-identifyContext、identifyAnonymousContext 直接属于 FeatBitClient，已包含在正式版 0.2.0；成功仅表示身份采用。详细数值、错误映射和事件契约见[核心 SDK 契约](./core-sdk-contract.md)。Provider 本身仍待实现。
+identifyContext、identifyAnonymousContext 直接属于 FeatBitClient，已包含在正式版 0.2.0；成功仅表示身份采用。详细数值、错误映射和事件契约见[核心 SDK 契约](./core-sdk-contract.md)。Provider 开发实现已建立，验收状态见[验证记录](./verification.md)。
 
 其余接入边界保持：ClientOptions 使用 factory 创建；status 无身份 generation，由 Provider token + awaitReady 仲裁；Track 结构详情不发送；OpenFeature 初始化/协调状态提交仍需满足 G02。
 
-## 4. 实施顺序（需要后续明确实现授权）
+## 4. 实施顺序（2026-10-09 已获实现授权）
 
 1. 核心 G01 已完成，依赖固定为 0.2.0；不再安排新增核心接口或再次发布核心 SDK。
 2. 先针对 OpenFeature 0.9.0 建立 R15 最小复现，覆盖初始化、上下文协调、provider 替换及失败状态提交；据此修正并验证上游状态仲裁。G02 在正式 Provider 发布前必须通过。
-3. 取得实现授权后，可在处理 G02 的同时建立独立 Android library 工程；开发/复现暂固定 OpenFeature 0.9.0，核心固定 0.2.0。固定 AGP/Gradle/JDK；两项公共类型依赖通过 api 暴露，内部依赖用 implementation。开发基线不代表正式发布依赖已经验收。
+3. 已建立独立 Android library 工程，并单独记录 G02 阻塞；开发/复现暂固定 OpenFeature 0.9.0，核心固定 0.2.0。固定 AGP/Gradle/JDK；两项公共类型依赖通过 api 暴露，内部依赖用 implementation。开发基线不代表正式发布依赖已经验收。
 4. 实现纯映射与 EvaluationAdapter，再实现拥有客户端的生命周期和事件桥；复用 TestData，无需复制测试数据源。保留 Double 数值边界，不恢复精确 Long 或失败零事件方案。
 5. 选定包含状态修正且通过 G02 的正式 OpenFeature 版本，在该版本上重跑集成测试；完成独立 Kotlin/Java 消费者、Android 设备及服务端事件验收。核心的兼容性结果不替代这些检查。
 6. 补集成文档、限制、迁移/版本兼容表及发布产物验证，全部适用闸门通过后再安排正式发布。
 
-未来目录建议：provider 模块、consumer-tests/kotlin、consumer-tests/java、docs。它们只是规划，本次不创建工程、Gradle 文件、源码或测试代码。
+目录现已建立：provider 模块、consumer-tests/kotlin、consumer-tests/java、tools 与 docs。具体执行证据和未完成闸门见[验证记录](./verification.md)。
 
 ## 5. 验收矩阵
 
@@ -82,6 +82,6 @@ identifyContext、identifyAnonymousContext 直接属于 FeatBitClient，已包�
 | A14 | OpenFeature 0.9.0 的开发/复现测试，以及最终通过 G02 的正式依赖上的注册/上下文/错误 hooks 验收；独立 API instance 分别创建 provider，不共享可变身份 client |
 | A15 | 真实服务端同步及事件归属落库；HTTP 200 不能单独证明服务端接受事件 |
 
-本次 Provider 工作仅为源码核对和设计文档检查；A01–A15 的 Provider 验收均尚未执行。上文已通过的核心验收只支持 G01，不据此标记 Provider 用例通过。
+Provider 已开始执行功能、竞态、制品和设备验证；A01–A15 是完整验收范围，不代表每个变体均已验证。当前证据与缺口见[验证记录](./verification.md)。核心验收仍仅支持 G01。
 
 具体竞态屏障、24 组时序用例、10 项不变量与 G01–G06 发布闸门见[详细验收协议](./architecture-validation.md)。本次还核对了 OpenFeature 的 [provider 规范](https://openfeature.dev/specification/sections/providers/)、[上下文规范](https://openfeature.dev/specification/sections/evaluation-context/)和[事件规范](https://openfeature.dev/specification/sections/events/)；当前在线规范可能比 v0.9.0 接口更新，本文不自行添加该版本接口没有的 domain 参数。

@@ -1,6 +1,6 @@
 # 核心 SDK 评估与身份契约
 
-状态：2026-10-06 核心 SDK 0.2.0 已正式发布并完成公开下载、签名及独立消费验证。Provider 固定依赖 `co.featbit:featbit-client-android:0.2.0`，发布源码为 `7210251fbe5e3f9f452ef15e370da265f1009702`。本页描述已具备的核心接入契约，采用用户确定的 LaunchDarkly 风格类型与数值策略；替代此前 resolveDetail、ResolutionResult、ResolvedValue 和精确 JsonValue 的方案，不再要求这些新增 API。Provider 尚未实现，禁止引用 internal。发布证据见[实施基线](./implementation-plan.md#1-本次核对的基线)。
+状态：2026-10-06 核心 SDK 0.2.0 已正式发布并完成公开下载、签名及独立消费验证。Provider 固定依赖 `co.featbit:featbit-client-android:0.2.0`，发布源码为 `7210251fbe5e3f9f452ef15e370da265f1009702`。本页描述已具备的核心接入契约，采用用户确定的 LaunchDarkly 风格类型与数值策略；替代此前 resolveDetail、ResolutionResult、ResolvedValue 和精确 JsonValue 的方案，不再要求这些新增 API。Provider 已使用公开 API 实现接入，生产代码禁止引用核心 internal。发布证据见[实施基线](./implementation-plan.md#1-本次核对的基线)。
 
 ## 1. 复用公开评估 API
 

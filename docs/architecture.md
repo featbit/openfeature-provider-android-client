@@ -1,6 +1,6 @@
 # 详细架构设计
 
-设计日期：2026-10-05；基线更新：2026-10-06；设计补充：2026-10-09。状态：Provider 设计待实现验证。本文与 [核心 SDK 契约](./core-sdk-contract.md) 定义接入目标；[API](./api-design.md) 定义公共边界，[行为规范](./behavior-design.md) 定义映射规则。核心 SDK 0.2.0 已发布并满足 G01；OpenFeature 0.9.0 的状态仲裁仍未满足 G02，Provider 自身尚未验收。
+设计日期：2026-10-05；基线更新：2026-10-06；设计补充：2026-10-09。状态：Provider 开发实现已建立，验收范围见[验证记录](./verification.md)。本文与 [核心 SDK 契约](./core-sdk-contract.md) 定义接入目标；[API](./api-design.md) 定义公共边界，[行为规范](./behavior-design.md) 定义映射规则。核心 SDK 0.2.0 已发布并满足 G01；OpenFeature 0.9.0 的状态仲裁仍未满足 G02，Provider 已执行部分验证，完整发布闸门仍未全部通过。
 
 ## 1. 架构决策
 
@@ -247,7 +247,7 @@ clearCache 提交时再次确认稳定身份，并以提交时的核心身份为
 
 ## 10. OpenFeature v0.9.0 的状态交接限制
 
-2026-10-06 重新核对：正式版仍为 0.9.0，其 OpenFeatureAPIInstance 与 main `8d727fbead4b8d8bc66dc271ad35de1ece603a8b` 的实现相同。setProviderInternal 在 initialize 返回后无条件写 Ready。若 provider 在此窗口已发 Stale/Error，该 Ready 可以覆盖更新状态。这是源码时序推导，本项目尚未运行复现测试。接口没有“SDK 已提交初始化状态”的回调；provider 无法靠 yield、固定延时或重新读取自己的状态证明避开此窗口。
+2026-10-06 重新核对：正式版仍为 0.9.0，其 OpenFeatureAPIInstance 与 main `8d727fbead4b8d8bc66dc271ad35de1ece603a8b` 的实现相同。setProviderInternal 在 initialize 返回后无条件写 Ready。若 provider 在此窗口已发 Stale/Error，该 Ready 可以覆盖更新状态。该时序现已由确定性复现测试确认，本项目已通过确定性测试复现该问题，见[验证记录](./verification.md)。接口没有“SDK 已提交初始化状态”的回调；provider 无法靠 yield、固定延时或重新读取自己的状态证明避开此窗口。
 
 因此区分两项保证：provider 自身的准入、身份、返回值和事件桥由本文协议保证；**OpenFeature.getStatus 的最终一致性还依赖上游初始化提交修正**。不在 provider 中轮询全局 OpenFeatureAPI，也不反射改私有状态；隔离 API 实例必须同样可用。
 

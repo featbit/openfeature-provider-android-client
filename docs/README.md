@@ -1,6 +1,6 @@
 # FeatBit OpenFeature Android Provider 设计
 
-设计日期：2026-10-05；基线更新：2026-10-06；设计补充：2026-10-09。状态：详细架构设计待实现验证；Provider 尚未实现、编译或发布。核心 SDK 0.2.0 已发布并验证。
+设计日期：2026-10-05；基线更新：2026-10-06；设计补充：2026-10-09。状态：详细架构已进入实现与验证阶段；Provider 开发实现已建立；尚未正式发布。当前编译、测试与设备证据见[验证记录](./verification.md)。核心 SDK 0.2.0 已发布并验证。
 
 目标是在独立 Android AAR 中实现 OpenFeature Kotlin `FeatureProvider`，复用 FeatBit Android SDK 的同步、缓存、身份、生命周期与事件能力。实现语言为 Kotlin，新增公共构造及扩展 API 兼容 Java 调用；OpenFeature 自身的 suspend/Flow 接口保持其原有调用方式。
 
@@ -33,11 +33,11 @@
 
 2026-10-06 已发布的核心 SDK 0.2.0 包含统一声明类型检查、Double 数值模型、失败评估的选中 variation 事件策略，以及两项身份采用接口。Provider 不再要求精确 Long 或失败零事件，详见[核心接入契约](./core-sdk-contract.md)。这表示采用了允许精度损失的数值方案，不表示已经实现精确 Long 解析。
 
-G01 核心能力已满足，正式产物、签名和独立 Java/Kotlin 消费验证依据见[基线与证据](./implementation-plan.md#1-本次核对的基线)。OpenFeature 当前正式版仍为 0.9.0，初始化/上下文完成结果覆盖更新状态的源码时序问题仍在；本项目尚未运行复现测试，G02 未通过。所需仲裁规则见[详细架构](./architecture.md)。取得实现授权后可以开始 Provider 开发并进行最小复现，不必继续等待核心发布；正式发布仍须通过 G02 及 Provider 自身验收。
+G01 核心能力已满足，正式产物、签名和独立 Java/Kotlin 消费验证依据见[基线与证据](./implementation-plan.md#1-本次核对的基线)。OpenFeature 当前正式版仍为 0.9.0，初始化/上下文完成结果覆盖更新状态的源码时序问题仍在；本项目已通过确定性测试复现该问题，见[验证记录](./verification.md)，G02 未通过。所需仲裁规则见[详细架构](./architecture.md)。已按实现授权建立 Provider 与最小复现，不再等待核心发布；正式发布仍须通过 G02 及 Provider 自身验收。
 
 另外，FeatBit Track 目前只接受事件名称和数值，不能携带 OpenFeature TrackingEventDetails 的任意结构属性；首版会明确披露该限制。
 
-Provider 新增 API 和策略仍是设计提案；核心 SDK API 已存在于 0.2.0。核心的发布与测试证据仅用于确认 G01，不替代本项目的集成和发布验收。
+Provider 新增 API 和策略已进入开发实现；核心 SDK API 已存在于 0.2.0。核心的发布与测试证据仅用于确认 G01，不替代本项目的集成和发布验收。
 
 ## 2026-10-09 设计补充
 
@@ -47,4 +47,4 @@ Provider 新增 API 和策略仍是设计提案；核心 SDK API 已存在于 0.
 - factory 开始后固定创建身份，只创建一次，再协调最新用户；明确核心可能先同步创建身份。
 - Track 统一转换为有限 Double，接受精度损失和下溢；非有限结果或转换异常丢弃。
 
-对应新增 R19–R24。以上是 Provider 设计决定，不需要修改核心 SDK；尚未实现或运行这些测试。G02 的 OpenFeature 状态验收要求保持不变。
+对应新增 R19–R24。以上是 Provider 设计决定，不需要修改核心 SDK；已建立对应实现与测试，实际覆盖及剩余变体见[验证记录](./verification.md)。G02 的 OpenFeature 状态验收要求保持不变。

@@ -6,7 +6,7 @@
 
 首版新增三个顶层公共类型：`FeatBitProvider`、`FeatBitOptionsFactory`、`IdentityPolicy`。Builder 作为 FeatBitProvider 的嵌套类型。映射器、状态协调器、值转换器、事件桥均为内部实现。
 
-以下为签名契约说明，不是 Kotlin/Java 实现代码。`Context` 在构造配置处指 Android Context；`EvaluationContext` 指 OpenFeature 上下文。
+以下为签名契约说明；对应实现已位于 provider 模块，验证范围见[验证记录](./verification.md)。`Context` 在构造配置处指 Android Context；`EvaluationContext` 指 OpenFeature 上下文。
 
 ## 2. 创建与配置
 
