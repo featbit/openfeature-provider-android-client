@@ -4,7 +4,7 @@ An OpenFeature Kotlin provider for the FeatBit Android SDK, implemented in Kotli
 
 For Java setup, asynchronous initialization, evaluation, and cleanup, see the [Java README](README.java.md).
 
-The current development implementation is `0.1.0-SNAPSHOT` and has not been officially released. It depends on FeatBit `0.2.0` and OpenFeature Kotlin `0.9.0`. Tests reproduce an OpenFeature issue in which lifecycle completion overwrites Stale/Fatal status: the provider still enforces evaluation admission, but the upstream public status can be inaccurate. G02 remains a release blocker; see the [verification record](docs/verification.md).
+The current development implementation is `0.1.0-SNAPSHOT` and has not been officially released. It depends on FeatBit `0.2.0` and OpenFeature Kotlin `0.9.0`. Tests reproduce an OpenFeature issue in which lifecycle completion overwrites Stale/Fatal status: the provider still enforces evaluation admission, but the upstream public status can be inaccurate. G02 is a known upstream limitation outside the current FeatBit release-fix scope; see the [verification record](docs/verification.md).
 
 ## Usage
 
@@ -77,7 +77,7 @@ python tools/check_api.py --update
 python -B -m unittest discover -s tools -p 'test_*.py'
 ```
 
-The update command reads `provider/build/outputs/aar/provider-release.aar`; build the current release first. CI never updates the baseline automatically. Passing these checks does not resolve G02 or authorize a release.
+The update command reads `provider/build/outputs/aar/provider-release.aar`; build the current release first. CI never updates the baseline automatically. Passing these checks does not resolve the upstream G02 limitation or constitute release approval.
 
 ## Documentation
 

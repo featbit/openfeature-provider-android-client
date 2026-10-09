@@ -8,7 +8,7 @@ The FeatBit OpenFeature Android provider is implemented in Kotlin with Java-comp
 
 In Java, OpenFeature's asynchronous lifecycle methods use Kotlin continuations. The helper below adapts them to callbacks without blocking the Android main thread.
 
-This is the unreleased `0.1.0-SNAPSHOT` development implementation, using FeatBit Android SDK `0.2.0` and OpenFeature Kotlin SDK `0.9.0`. OpenFeature lifecycle completion can overwrite Stale/Fatal status; tests reproduce this upstream issue and G02 remains a release blocker. Provider evaluation checks remain active. See the [verification record](docs/verification.md).
+This is the unreleased `0.1.0-SNAPSHOT` development implementation, using FeatBit Android SDK `0.2.0` and OpenFeature Kotlin SDK `0.9.0`. OpenFeature lifecycle completion can overwrite Stale/Fatal status; tests reproduce this upstream issue and G02 is a known upstream limitation outside the current FeatBit release-fix scope. Provider evaluation checks remain active. See the [verification record](docs/verification.md).
 
 ## Get Started
 

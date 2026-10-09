@@ -48,7 +48,7 @@ Successful FeatBit provider evaluations currently report OpenFeature reason `UNK
 
 Track returns no receipt. The UI says **Track invoked · delivery not acknowledged**, and does not claim acceptance or server persistence. Local/disabled events do not call Track. Flush displays the provider extension result. Neither a completed Track call nor a successful transport flush proves database persistence.
 
-The selected user is the requested OpenFeature context. Context reconciliation can finish with an error state; it is not an identity-adoption receipt. Evaluations remain subject to provider admission. OpenFeature 0.9.0 has the known G02 lifecycle status issue documented in [provider verification](../docs/verification.md); Inspect displays OpenFeature status separately from FeatBit connection diagnostics. These samples do not remove that release blocker.
+The selected user is the requested OpenFeature context. Context reconciliation can finish with an error state; it is not an identity-adoption receipt. Evaluations remain subject to provider admission. OpenFeature 0.9.0 has the known G02 lifecycle status issue documented in [provider verification](../docs/verification.md); Inspect displays OpenFeature status separately from FeatBit connection diagnostics. These samples do not correct that upstream limitation.
 
 ## Design and verification
 

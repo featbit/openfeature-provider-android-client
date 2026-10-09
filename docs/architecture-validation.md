@@ -54,15 +54,15 @@ Pure mapping tests do not start Android. Controller tests use virtual coroutine 
 
 Use a finite model to enumerate relative create/adopt/ready/timeout/cancel/close ordering, including repeated close, duplicate callbacks, zero/multiple subscribers, and every phase exit. Check I01–I10 rather than private-method invocation order. Resource counts must reach zero at completion; uncleaned work must correspond to an explicit timeout failure.
 
-## 4. Release gates
+## 4. Release checks and external limitations
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
 | G01 Core capabilities | FeatBitClient identity APIs, consistent declared-type checks, Double model, and compatible consumers; 0.2.0 released with verified public artifacts, see [release evidence](./implementation-plan.md#1-reviewed-baselines) | Satisfied; pin 0.2.0 |
-| G02 OpenFeature status commit | R15 plus provider replacement, initialization failure, and context reconciliation variants pass against a released dependency containing the fix that prevents obsolete lifecycle results from overwriting newer events | Not passed; 0.9.0 is the development/reproduction baseline, and deterministic tests confirm the defect |
-| G03 Functionality and races | Deterministic A01–A12, A14, and R01–R24 checks pass | Implemented with test coverage; the complete gate has not been declared passed; see verification record |
+| G02 OpenFeature status commit | R15 plus provider replacement, initialization failure, and context reconciliation variants pass against a released dependency containing the fix that prevents obsolete lifecycle results from overwriting newer events | External known limitation; deterministic tests confirm the 0.9.0 defect. Fixing upstream is excluded from the current FeatBit release scope |
+| G03 Functionality and races | Deterministic A01–A12, A14, and FeatBit-owned R01–R24 checks pass; upstream R15 status arbitration is tracked separately under G02 | 50 provider tests pass, including ten added concurrency regressions; the complete gate has not been declared passed; see verification record |
 | G04 Android artifacts | Independent Kotlin/Java builds, Debug/Release/R8, API 21 and newer devices/emulators, memory/main-thread I/O checks | Java/Kotlin Debug/Release/R8 and API 34 verified; API 21 and other checks remain |
 | G05 End-to-end events | Real-server flag/user/Track attribution and experiment events, including transition ordering and failed-parse selected-variation events under core policy | Provider end-to-end verification pending |
-| G06 Documentation and publication | Maven metadata, license, dependency locks, API compatibility table, anonymous/TrackingDetails limitations, and explicit untested scope | Development docs/local artifacts exist; release preparation remains incomplete |
+| G06 Documentation and publication | Maven metadata, license, dependency locks, API compatibility table, anonymous/TrackingDetails limitations, and explicit untested scope | Local signed-publication rehearsal and hosted Verify have passed; real Central publication and public consumption remain unverified |
 
-Compilation does not establish identity, state, or event correctness. Core 0.2.0 acceptance establishes only G01, not provider G03–G05. G02 remains an external dependency condition. The authorized provider implementation and minimal reproductions exist, but G02 must pass before release. OpenFeature has not been modified; its defect remains.
+Compilation does not establish identity, state, or event correctness. Core 0.2.0 acceptance establishes only G01, not provider G03–G05. G02 is a known external limitation excluded from the current FeatBit release-fix scope. Provider acceptance must still verify its own admission and identity protections. OpenFeature has not been modified; its defect remains.

@@ -1,7 +1,7 @@
 # Sample verification — 2026-10-09
 
 These results belong to the OpenFeature sample implementation in this repository. They do not
-inherit the Android SDK sample's historical acceptance record or remove provider release gate G02.
+inherit the Android SDK sample's historical acceptance record or resolve the upstream G02 limitation.
 
 ## Environment and exercised behavior
 
@@ -49,4 +49,4 @@ Polling, timed fallback/recovery, Track delivery, and server-side user targeting
 acceptance items. No physical device, API 21, TalkBack, hardware keyboard, deep sleep or complete
 OS/device matrix claim is made. The tablet capture uses an emulator viewport override, not a
 separate tablet AVD or physical tablet. CI configuration includes sample builds, tests, lint and
-APK artifacts; hosted CI has not run in this local task.
+APK artifacts. That sample verification was local; subsequent hosted Verify evidence is recorded in [provider verification](../docs/verification.md#current-scope-and-hosted-verification).

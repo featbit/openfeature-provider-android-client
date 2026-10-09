@@ -41,7 +41,7 @@ Evaluation context must match the applied identity; synchronous evaluation must 
 
 If the new context is invalid, the SDK may retain its old identity, but the provider marks the requested context unavailable. An old Ready callback cannot clear that error; a subsequent valid context can recover. SDK status callbacks have no generation field, so queued READY notifications cannot establish readiness for a new user. Confirm through the current identify/awaitReady results and refresh the snapshot. The SDK still isolates obsolete network responses itself.
 
-OpenFeature updates statusFlow on lifecycle success, but observe consumes the provider's event source, so the provider must also emit a Ready event. The unconditional Ready write after initialization in v0.9.0 can overwrite newer events; provider delays/rechecks cannot strictly solve this. See [status handoff limitations](./architecture.md#10-openfeature-v090-status-handoff-limitations) for the upstream fix and G02 release gate.
+OpenFeature updates statusFlow on lifecycle success, but observe consumes the provider's event source, so the provider must also emit a Ready event. The unconditional Ready write after initialization in v0.9.0 can overwrite newer events; provider delays/rechecks cannot strictly solve this. See [status handoff limitations](./architecture.md#10-openfeature-v090-status-handoff-limitations) for the upstream limitation and recommended fix, which is outside the current FeatBit scope.
 
 ## 4. Strict evaluation and numbers
 

@@ -23,7 +23,7 @@ For application integration, start with the [main README](../README.md) or the [
 | --- | --- |
 | Publication coordinates | Retain `co.featbit:featbit-openfeature-provider-android:<version>`, established in the core SDK architecture |
 | Package | `co.featbit.openfeature.android`, proposed for this provider |
-| Dependency baseline | Pin the released and verified `co.featbit:featbit-client-android:0.2.0` (G01 satisfied); use OpenFeature 0.9.0 for development/reproduction. The release version of `dev.openfeature:kotlin-sdk` must contain the status fix and pass G02 |
+| Dependency baseline | Pin the released and verified `co.featbit:featbit-client-android:0.2.0` (G01 satisfied); use OpenFeature 0.9.0 for development/reproduction. The pinned OpenFeature version remains 0.9.0; G02 is tracked as an external limitation, not a required FeatBit fix |
 | Platform | Android, minSdk 21, JVM 11 bytecode, Kotlin 2.2.10 design baseline; verify the JDK/AGP/Gradle combination through consumers |
 | Ownership | Each provider creates and exclusively owns one FeatBitClient; the first release does not take over an externally running client |
 | User model | The current OpenFeature EvaluationContext is the identity source; transitions follow onContextSet → adoption receipt → awaitReady |
@@ -37,11 +37,11 @@ For application integration, start with the [main README](../README.md) or the [
 
 Core SDK 0.2.0, released on 2026-10-06, includes consistent declared-type checks, the Double model, selected-variation events for failed evaluations, and both identity-adoption APIs. The provider no longer requires exact Long parsing or zero events on failure; see the [core contract](./core-sdk-contract.md). This is a numerical policy that permits precision loss, not an implementation of exact Long parsing.
 
-G01 is satisfied. Evidence for public artifacts, signatures, and independent Java/Kotlin consumers is in the [baseline and evidence](./implementation-plan.md#1-reviewed-baselines). The reviewed OpenFeature release is 0.9.0. Its initialization/context completion can overwrite newer status; deterministic tests reproduce the issue in the [verification record](./verification.md), so G02 remains open. Required arbitration rules are in the [architecture](./architecture.md). The authorized provider implementation and minimal reproductions are now available; no further core release is required. A provider release still requires G02 and its own acceptance checks.
+G01 is satisfied. Evidence for public artifacts, signatures, and independent Java/Kotlin consumers is in the [baseline and evidence](./implementation-plan.md#1-reviewed-baselines). The reviewed OpenFeature release is 0.9.0. Its initialization/context completion can overwrite newer status; deterministic tests reproduce the issue in the [verification record](./verification.md), so G02 remains open. Required arbitration rules are in the [architecture](./architecture.md). The authorized provider implementation and minimal reproductions are now available; no further core release is required. Provider release assessment covers FeatBit-owned behavior and acceptance checks; fixing upstream G02 is outside the current scope.
 
 FeatBit Track currently accepts only an event name and a numeric value. It cannot carry arbitrary structured attributes from OpenFeature TrackingEventDetails; this limitation must be documented for the first release.
 
-The new provider APIs and policies are under implementation; the core APIs already exist in 0.2.0. Core release/test evidence establishes only G01 and does not replace this project's integration and release acceptance.
+The provider APIs and policies are implemented; the core APIs already exist in 0.2.0. Core release/test evidence establishes only G01 and does not replace this project's integration and release acceptance.
 
 ## Design additions on 2026-10-09
 
@@ -51,4 +51,4 @@ The new provider APIs and policies are under implementation; the core APIs alrea
 - Freeze the creation identity once the factory starts, create once, then reconcile the latest user. The core may initially synchronize the creation identity.
 - Convert Track numbers to finite Double values, accepting precision loss and underflow. Drop nonfinite results and conversion failures.
 
-These additions correspond to R19–R24. They are provider decisions and do not require core SDK changes. Implementations and tests are available; see the [verification record](./verification.md) for actual coverage and remaining variants. G02's OpenFeature status requirements are unchanged.
+These additions correspond to R19–R24. They are provider decisions and do not require core SDK changes. Implementations and tests are available; see the [verification record](./verification.md) for actual coverage and remaining variants. G02 remains a documented upstream limitation; the provider does not work around it.

@@ -2,7 +2,7 @@
 
 The manually dispatched [release workflow](../.github/workflows/release-candidate.yml) follows the Android SDK release process: validate the selected tag, verify the actual versioned Maven artifact with independent consumers, stage a signed publication, package it, upload once, and wait for Central to report `PUBLISHED`.
 
-This workflow is release infrastructure, not release approval. The current OpenFeature 0.9.0 G02 status defect and other outstanding gates in [verification](verification.md) remain unresolved. Maintainers must resolve those gates and review device/live-server evidence before dispatching a public release. Ordinary pushes, PRs, and tag creation do not upload anything.
+This workflow is release infrastructure, not release approval. OpenFeature 0.9.0 G02 is a documented upstream limitation outside the current FeatBit release-fix scope. Maintainers must review the FeatBit-owned outstanding checks in [verification](verification.md), including device/live-server evidence, before dispatching a public release. Ordinary pushes, PRs, and tag creation do not upload anything.
 
 ## Credentials and repository setup
 

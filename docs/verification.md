@@ -13,7 +13,7 @@ Date: 2026-10-09. The provider is implemented as development version `0.1.0-SNAP
 
 Production code uses only public FeatBit APIs. Neither the core SDK nor OpenFeature was modified. Tests inject a fake through the internal ClientFactory. Test-only reflection constructs IdentityReceipt, whose constructor is not public; it is not included in the AAR.
 
-ClientOwner, AdmissionGate, and TrackingAdapter in the architecture diagram correspond to responsibilities inside ProviderRuntime. EvaluationAdapter's pure conversions are implemented in ValueMapper; there is no separate interface for every responsibility. Control uses a short monitor, a serialized submission mutex, and independent owner coroutines. Extensions follow acceptance order. New contexts discard older unsubmitted reconciliation, while the owner retains submitted adoption receipts. The creation identity is frozen when the factory task is submitted.
+ClientOwner, AdmissionGate, and TrackingAdapter in the architecture diagram correspond to responsibilities inside ProviderRuntime. EvaluationAdapter's pure conversions are implemented in ValueMapper; there is no separate interface for every responsibility. Control uses a short monitor, a serialized submission mutex, and independent owner coroutines. Extensions follow acceptance order. New contexts discard older unsubmitted reconciliation, while the owner retains submitted adoption receipts. The creation identity is frozen when the factory starts.
 
 ## Pinned build combination
 
@@ -31,20 +31,20 @@ Public dependencies use api. Consumers do not reference the provider source modu
 
 ## Unit tests and integration coverage
 
-40 tests passed, including 3 reproduction tests that explicitly assert known upstream defects. Passing a reproduction means the defect remains; it does not satisfy G02.
+50 tests passed, including 3 reproduction tests that explicitly assert known upstream defects. Passing a reproduction means the defect remains; it does not satisfy G02.
 
 | Test class | Count | Main coverage |
 | --- | ---: | --- |
 | MappingTest | 6 | key/name/attributes, anonymous restrictions, reserved fields, Null/absence, integer-attribute precision, type errors, recursive JSON |
-| RuntimeTest | 25 | Six reads, Double-to-integer conversion, adoption/readiness separation, named/anonymous races, invalid contexts, obsolete callbacks, cancellation, creation timeout, switching/closing inside factory, late resources, read leases, extension capacity/queueing/timeouts, mode failure, Track rounding/reentrancy, Stale/Fatal |
+| RuntimeTest | 34 | Six reads, Double-to-integer conversion, adoption/readiness separation, named/anonymous races, invalid contexts, obsolete callbacks, cancellation, creation timeout, switching/closing inside factory, late resources, read leases, extension capacity/queueing/timeouts, mode failure, Track rounding/reentrant throwing logger, cache-clear/context races and budgets, factory-time invalid/expired contexts, Stale/Fatal |
 | EventAndOperationTest | 5 | 70 collectors, late subscribers, All invalidation after more than 1024 keys for slow subscribers, separate state/change slots, close cleanup, observe races, single completion, registration-failure probing |
-| OpenFeatureIntegrationTest | 4 | Real API Client defaults/error hook, plus initialization/context-return/provider-replacement status-overwrite reproductions |
+| OpenFeatureIntegrationTest | 5 | Real API Client defaults/error hook, registration and updates with 65 blocked collectors, plus initialization/context-return/provider-replacement status-overwrite reproductions |
 
 Race tests use virtual time, delayed Operations, and reentrant barriers, not sleep-based timing guesses. Fakes do not verify networking, storage, or server event protocols.
 
 ## Android artifacts and devices
 
-Passed:
+Historical implementation-run evidence (before the concurrency expansion below):
 
 - Spotless, 40 unit tests, and Android lint with no errors. The compileSdk update notice does not affect the build.
 - Local publication of the release AAR, sources JAR, POM, and Gradle metadata.
@@ -75,11 +75,11 @@ The three upstream090... methods in OpenFeatureIntegrationTest reproduce these c
 
 ## Outstanding release verification
 
-- G02: obtain an upstream status-arbitration fix in a released dependency, then convert the reproductions into regressions asserting correct behavior.
+- G02 (external limitation, excluded from the current FeatBit release-fix scope): retain the three upstream 0.9.0 reproductions and document inaccurate public status during the known windows. No upstream patch or dependency upgrade is required by this scope.
 - G03: A01–A15/R01–R24 remain the full acceptance targets. The specific scenarios above have coverage, but not every permutation has been exhausted, including all create-submission boundaries and all control-operation permutations. The concurrency expansion below covers cache-clear/context-transition cases, logger reentrancy, and real API registration with 65 existing subscribers.
 - G04: API 21 devices, physical devices, and systematic memory/main-thread I/O checks have not run. API 34 emulator results do not replace them.
 - G05: real-server cold start, cache/Bootstrap recovery, and persisted analytics attribution have not been verified.
-- G06: development documentation and local artifact metadata exist. Signing, generated documentation JARs and a manual Central workflow are now configured (see [release instructions](release.md)); real Central publication, complete transitive dependency locking, and public-repository verification remain unverified. The new CI workflow has not run on GitHub.
+- G06: development documentation and local artifact metadata exist. Signing, generated documentation JARs and a manual Central workflow are now configured (see [release instructions](release.md)); real Central publication, complete transitive dependency locking, and public-repository verification remain unverified. Hosted Verify passed for `76b7512`; current-commit evidence is listed below.
 
 This is a buildable, runnable, tested development implementation, not completed release acceptance.
 
@@ -113,7 +113,6 @@ Added the manually dispatched `release-candidate.yml`, using the Android SDK's r
 
 No workflow dispatch, remote upload, public version/tag creation, device test, or new live-server acceptance occurred. Real Central credentials, Portal validation and fresh public consumption remain unverified. G02 remains open; infrastructure completion does not change release readiness.
 
-
 ## Provider concurrency coverage added on 2026-10-09
 
 Ten deterministic regressions extend the provider suite from 40 to 50 tests. They use a shared coroutine test scheduler, explicit operation completion, and suspended collectors; no wall-clock sleeps are used. FakeCore records cache-clear identity, scope, and submitted timeout and can hold completion independently of the caller's deadline.
@@ -129,3 +128,14 @@ Ten deterministic regressions extend the provider suite from 40 to 50 tests. The
 Validation: `:provider:testDebugUnitTest` passed all 50 tests (zero failures or skips), including the three unchanged upstream 0.9.0 defect reproductions. `spotlessCheck` and `git diff --check` passed. Local command output: `build/concurrency-tests.log`; JUnit XML: `provider/build/test-results/testDebugUnitTest/`.
 
 Only test fixtures, tests, and this coverage record changed. Neither production provider code nor the Android SDK or OpenFeature dependency changed. This verifies controlled interleavings, not arbitrary JVM thread stress, device behavior, or live-server attribution. It does not declare every A/R permutation or the complete release gate passed.
+
+
+## Current scope and hosted verification
+
+The current release review focuses on the FeatBit Android SDK and this provider. G02 remains an observed OpenFeature 0.9.0 limitation, not a FeatBit fix prerequisite. Its three reproductions remain unchanged; passing them does not imply correct upstream status arbitration. G03–G06 evidence and outstanding device/server/publication checks remain separate.
+
+- Concurrency test commit: `5451be05a03992290eb7ccc635c1db531d10b68a`, pushed to `main`. The local suite passed all 50 tests; this was not a new device or live-server acceptance run.
+- Hosted [Verify for `76b7512`](https://github.com/featbit/openfeature-provider-android-client/actions/runs/37960714897) completed successfully, superseding the earlier local-only CI notes.
+- Hosted [Verify for `5451be0`](https://github.com/featbit/openfeature-provider-android-client/actions/runs/37963178572) was in progress when checked on 2026-10-09. This observation is not a passing result.
+
+Earlier sections retain their original run counts and scope as historical evidence. The current unit-test summary and concurrency section reflect the latest local suite.
