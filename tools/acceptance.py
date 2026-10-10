@@ -63,7 +63,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Optional adb serial; installs only the two acceptance apps")
     parser.add_argument("--repository", type=Path, help="New, non-existing directory for the staged publication")
-    parser.add_argument("--version", default="0.1.0-SNAPSHOT")
+    parser.add_argument("--version", default="0.2.0")
     args = parser.parse_args()
     if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[A-Za-z0-9.]+)?", args.version):
         parser.error("Invalid artifact version")

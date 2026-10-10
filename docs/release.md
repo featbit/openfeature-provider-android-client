@@ -19,7 +19,7 @@ The Central account must have publishing rights for `co.featbit`, and the signin
 
 ## Version and artifacts
 
-Coordinates: `co.featbit:featbit-openfeature-provider-android:<version>`. The default remains `0.1.0-SNAPSHOT`. `-PproviderVersion=<version>` controls the provider publication and Java/Kotlin consumer dependency versions; `tools/acceptance.py --version <version>` propagates the same value through publication, metadata checks, and consumers.
+Coordinates: `co.featbit:featbit-openfeature-provider-android:<version>`. The selected release version and build default are `0.2.0`. `-PproviderVersion=<version>` controls the provider publication and Java/Kotlin consumer dependency versions; `tools/acceptance.py --version <version>` propagates the same value through publication, metadata checks, and consumers.
 
 The publication includes the AAR, POM, Gradle module metadata, sources JAR, and a `javadoc`-classifier JAR containing generated Dokka HTML. The POM contains license, SCM, and developer information. Dokka 2.2.0 generates the documentation using its v2 Gradle integration. Release signatures are detached armored PGP signatures.
 
@@ -27,10 +27,10 @@ Local unsigned rehearsal (no upload):
 
 ```powershell
 python -B -m unittest discover -s tools -p 'test_*.py'
-python tools/acceptance.py --version 0.1.0
+python tools/acceptance.py --version 0.2.0
 ```
 
-The example version is for testing the release path; it does not select or authorize the first public release. Acceptance creates a fresh repository and runs Provider tests, API/metadata checks, and Java/Kotlin consumer tests, Debug/Release builds and lint. A complete successful consumer build does not prove device or live-server behavior.
+Version `0.2.0` is the selected first public release, aligned with the core SDK version. Creating its tag does not dispatch the publication workflow. Acceptance creates a fresh repository and runs Provider tests, API/metadata checks, and Java/Kotlin consumer tests, Debug/Release builds and lint. A complete successful consumer build does not prove device or live-server behavior.
 
 ## Dispatch
 

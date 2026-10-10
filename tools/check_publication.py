@@ -8,7 +8,7 @@ import zipfile
 
 GROUP = "co.featbit"
 ARTIFACT = "featbit-openfeature-provider-android"
-VERSION = "0.1.0-SNAPSHOT"
+VERSION = "0.2.0"
 EXPECTED = {
     ("co.featbit", "featbit-client-android"): "0.2.0",
     ("dev.openfeature", "kotlin-sdk"): "0.9.0",

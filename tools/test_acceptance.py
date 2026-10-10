@@ -82,14 +82,16 @@ class AcceptanceTests(unittest.TestCase):
 
 
 class PublicationTests(unittest.TestCase):
+    version = "0.1.0-SNAPSHOT"
+
     def setUp(self):
         AcceptanceTests.setUp(self)
         self.repository = self.directory / "repo"
-        self.artifact_dir = self.repository / "co/featbit" / publication.ARTIFACT / publication.VERSION
+        self.artifact_dir = self.repository / "co/featbit" / publication.ARTIFACT / self.version
         self.artifact_dir.mkdir(parents=True)
         self.files = {}
         root = ET.Element("metadata")
-        for k, v in (("groupId", publication.GROUP), ("artifactId", publication.ARTIFACT), ("version", publication.VERSION)):
+        for k, v in (("groupId", publication.GROUP), ("artifactId", publication.ARTIFACT), ("version", self.version)):
             ET.SubElement(root, k).text = v
         versions = ET.SubElement(ET.SubElement(root, "versioning"), "snapshotVersions")
         for ext, classifier in (("aar", ""), ("pom", ""), ("module", ""), ("jar", "sources"), ("jar", "javadoc")):
@@ -112,7 +114,7 @@ class PublicationTests(unittest.TestCase):
         with zipfile.ZipFile(self.files["javadoc"], "w") as z:
             z.writestr("index.html", "API reference fixture")
         pom = ET.Element("project", xmlns="http://maven.apache.org/POM/4.0.0")
-        for k, v in (("groupId", publication.GROUP), ("artifactId", publication.ARTIFACT), ("version", publication.VERSION), ("packaging", "aar")):
+        for k, v in (("groupId", publication.GROUP), ("artifactId", publication.ARTIFACT), ("version", self.version), ("packaging", "aar")):
             ET.SubElement(pom, k).text = v
         deps = ET.SubElement(pom, "dependencies")
         for (group, name), version in publication.RUNTIME.items():
@@ -122,9 +124,9 @@ class PublicationTests(unittest.TestCase):
         ET.ElementTree(pom).write(self.files["pom"])
         variants = []
         for usage, dependencies in (("java-api", publication.EXPECTED), ("java-runtime", publication.RUNTIME)):
-            variants.append({"attributes": {"org.gradle.usage": usage, "org.gradle.category": "library"}, "dependencies": [{"group": g, "module": n, "version": {"requires": v}} for (g, n), v in dependencies.items()], "files": [{"name": publication.ARTIFACT + "-" + publication.VERSION + ".aar", "url": publication.ARTIFACT + "-" + publication.VERSION + ".aar", "sha256": publication.digest(self.files["aar"]), "size": self.files["aar"].stat().st_size}]})
-        variants.append({"attributes": {"org.gradle.docstype": "sources"}, "files": [{"url": publication.ARTIFACT + "-" + publication.VERSION + "-sources.jar", "size": self.files["sources"].stat().st_size, "sha256": publication.digest(self.files["sources"])}]})
-        self.module = {"component": {"group": publication.GROUP, "module": publication.ARTIFACT, "version": publication.VERSION}, "variants": variants}
+            variants.append({"attributes": {"org.gradle.usage": usage, "org.gradle.category": "library"}, "dependencies": [{"group": g, "module": n, "version": {"requires": v}} for (g, n), v in dependencies.items()], "files": [{"name": publication.ARTIFACT + "-" + self.version + ".aar", "url": publication.ARTIFACT + "-" + self.version + ".aar", "sha256": publication.digest(self.files["aar"]), "size": self.files["aar"].stat().st_size}]})
+        variants.append({"attributes": {"org.gradle.docstype": "sources"}, "files": [{"url": publication.ARTIFACT + "-" + self.version + "-sources.jar", "size": self.files["sources"].stat().st_size, "sha256": publication.digest(self.files["sources"])}]})
+        self.module = {"component": {"group": publication.GROUP, "module": publication.ARTIFACT, "version": self.version}, "variants": variants}
         self.files["module"].write_text(json.dumps(self.module))
         self.built = self.directory / "built.aar"
         self.built.write_bytes(self.files["aar"].read_bytes())
@@ -135,7 +137,7 @@ class PublicationTests(unittest.TestCase):
             path.with_name(path.name + ".sha256").write_text(publication.digest(path))
 
     def verify(self):
-        return publication.verify(self.repository, self.built)
+        return publication.verify(self.repository, self.built, version=self.version)
 
     def test_valid_publication(self):
         self.assertEqual(5, len(self.verify()))

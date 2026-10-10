@@ -4,11 +4,11 @@ An OpenFeature Kotlin provider for the FeatBit Android SDK, implemented in Kotli
 
 For Java setup, asynchronous initialization, evaluation, and cleanup, see the [Java README](README.java.md).
 
-The current development implementation is `0.1.0-SNAPSHOT` and has not been officially released. It depends on FeatBit `0.2.0` and OpenFeature Kotlin `0.9.0`. Tests reproduce an OpenFeature issue in which lifecycle completion overwrites Stale/Fatal status: the provider still enforces evaluation admission, but the upstream public status can be inaccurate. G02 is a known upstream limitation outside the current FeatBit release-fix scope; see the [verification record](docs/verification.md).
+The selected release version is `0.2.0`; Maven Central publication has not yet been confirmed. It depends on FeatBit `0.2.0` and OpenFeature Kotlin `0.9.0`. Tests reproduce an OpenFeature issue in which lifecycle completion overwrites Stale/Fatal status: the provider still enforces evaluation admission, but the upstream public status can be inaccurate. G02 is a known upstream limitation outside the current FeatBit release-fix scope; see the [verification record](docs/verification.md).
 
 ## Usage
 
-Local AAR coordinates: `co.featbit:featbit-openfeature-provider-android:0.1.0-SNAPSHOT`. Requires Android API 21+. The verified Kotlin consumer version is 2.2.10, with JVM 11 bytecode. Builds use JDK 17, AGP 8.10.1, and Gradle 8.11.1.
+Local AAR coordinates: `co.featbit:featbit-openfeature-provider-android:0.2.0`. Requires Android API 21+. The verified Kotlin consumer version is 2.2.10, with JVM 11 bytecode. Builds use JDK 17, AGP 8.10.1, and Gradle 8.11.1.
 
 ```kotlin
 val provider = FeatBitProvider.builder(applicationContext) { user ->

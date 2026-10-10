@@ -27,7 +27,7 @@ class ReleaseTests(unittest.TestCase):
             name = publication.ARTIFACT + "-" + self.version + {"aar": ".aar", "pom": ".pom", "module": ".module", "sources": "-sources.jar", "javadoc": "-javadoc.jar"}[key]
             content = source.read_bytes()
             if key in ("pom", "module"):
-                content = content.replace(publication.VERSION.encode(), self.version.encode())
+                content = content.replace(fixture.version.encode(), self.version.encode())
             path = target / name
             path.write_bytes(content)
             (self.accepted / relative / name).write_bytes(content)

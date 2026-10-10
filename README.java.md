@@ -49,11 +49,11 @@ android {
 }
 
 dependencies {
-    implementation 'co.featbit:featbit-openfeature-provider-android:<version>'
+    implementation 'co.featbit:featbit-openfeature-provider-android:0.2.0'
 }
 ```
 
-Replace `<version>` with the version published to your local repository; see the [development guide](DEVELOPMENT.md#usage). OpenFeature and FeatBit are transitive API dependencies of the provider and do not need separate dependency declarations.
+These instructions use the selected release version from the local repository; Maven Central publication has not yet been confirmed. OpenFeature and FeatBit are transitive API dependencies of the provider and do not need separate dependency declarations.
 
 ### Prerequisite
 

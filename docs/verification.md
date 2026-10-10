@@ -1,5 +1,11 @@
 # Implementation and Verification Record
 
+## Release version selection — 2026-10-10
+
+Selected provider version `0.2.0` and tag `v0.2.0`, aligned with the FeatBit Android SDK dependency. Provider, independent consumers, samples, and acceptance/publication defaults now use this release version. Snapshot validation fixtures retain an explicit snapshot version independent of the build default. README installation coordinates use the selected version.
+
+Local release-artifact acceptance passed: 34 script tests, 50 provider tests, Java/Kotlin 3 tests each, consumer Debug/Release/R8 builds, provider/consumer lint, formatting, API baseline, and all five publication files. Evidence: `build/acceptance/20261010-084652-a5ccf622/`. AAR SHA-256: `eb65e8cb52b16146367b025428cf4e5c3c303f65e7b59835a7292075d186c8bd`. No device/live-server acceptance or Central upload was performed in this run. Tagging does not establish public Maven availability; publication remains a separate manual workflow.
+
 ## README compilation check — 2026-10-10
 
 Extracted the Kotlin and Java Quick Start, evaluation, context-change, Track/Flush, and cleanup code blocks, plus the optional Java suspend helper and full shutdown example, into an isolated Android consumer project under `build/readme-compile-check`. Only enclosing methods/classes and separate snippet scopes were added; the snippets use the staged provider AAR and its Maven dependencies, not provider source substitution.

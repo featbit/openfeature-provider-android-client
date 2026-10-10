@@ -8,7 +8,7 @@ plugins {
 
 group = "co.featbit"
 
-version = providers.gradleProperty("providerVersion").getOrElse("0.1.0-SNAPSHOT")
+version = providers.gradleProperty("providerVersion").getOrElse("0.2.0")
 
 android {
     namespace = "co.featbit.openfeature.android"
