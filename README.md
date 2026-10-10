@@ -6,15 +6,19 @@
 
 The FeatBit OpenFeature Android provider is implemented in Kotlin with Java-compatible public APIs. It owns one FeatBit SDK client; applications evaluate flags and change identity through OpenFeature.
 
-In Kotlin, call OpenFeature's suspend lifecycle methods from a coroutine. The owner below exposes suspend functions without blocking the Android main thread.
-
-This is the unreleased `0.1.0-SNAPSHOT` development implementation, using FeatBit Android SDK `0.2.0` and OpenFeature Kotlin SDK `0.9.0`. OpenFeature lifecycle completion can overwrite Stale/Fatal status; tests reproduce this upstream issue and G02 is a known upstream limitation outside the current FeatBit release-fix scope. Provider evaluation checks remain active. See the [verification record](docs/verification.md).
+In Kotlin, call OpenFeature's suspend lifecycle methods from a coroutine.
 
 ## Get Started
 
 ### Installation
 
-Requires Android API 21+. The verified build uses JDK 17, Java 11 source/bytecode, AGP 8.10.1, and Gradle 8.11.1. The verified Kotlin consumer uses Kotlin 2.2.10. A Java application does not need the Kotlin Gradle plugin; Kotlin runtime dependencies are still required and are resolved transitively.
+Requires Android API 21+ and a build toolchain that supports Java 11 bytecode. A Java application does not need the Kotlin Gradle plugin; Kotlin runtime dependencies are resolved transitively. The tested compiler and build-tool versions are listed in the [development guide](DEVELOPMENT.md#usage).
+
+Enable AndroidX in your application's root `gradle.properties` for the SDK's lifecycle dependencies:
+
+```properties
+android.useAndroidX=true
+```
 
 Publish the development AAR locally from this repository:
 
@@ -46,11 +50,11 @@ android {
 }
 
 dependencies {
-    implementation("co.featbit:featbit-openfeature-provider-android:0.1.0-SNAPSHOT")
+    implementation("co.featbit:featbit-openfeature-provider-android:<version>")
 }
 ```
 
-This snapshot has not been published to Maven Central. OpenFeature and FeatBit are transitive API dependencies of the provider.
+Replace `<version>` with the version published to your local repository; see the [development guide](DEVELOPMENT.md#usage). OpenFeature and FeatBit are transitive API dependencies of the provider and do not need separate dependency declarations.
 
 ### Prerequisite
 
@@ -58,81 +62,61 @@ Use a client SDK key and endpoint addresses from your FeatBit deployment.
 
 ### Quick Start
 
-Keep the provider in an application-scoped owner. The options factory must use the supplied user; it runs once during initialization. Replace the SDK key and endpoint placeholders with your FeatBit deployment configuration.
+Create one provider for your application and register it through OpenFeature. The options factory must use the supplied user; it runs once during initialization. Replace the SDK key and endpoint placeholders with your FeatBit deployment configuration.
 
-The following class is application code, not an additional provider API. Its lifecycle methods are suspend functions. Serialize registration, identity changes, and shutdown; wait for one call to return before starting the next lifecycle operation.
+Run this setup once in your application's initialization path; `applicationContext` is your Android application context. Retain `api`, `provider`, `client`, and `applicationScope` at application scope. The example creates and launches the coroutine explicitly; reuse your existing application scope if you already have one.
 
 ```kotlin
-import android.content.Context
 import co.featbit.android.api.ClientOptions
 import co.featbit.openfeature.android.FeatBitProvider
-import dev.openfeature.kotlin.sdk.Client
 import dev.openfeature.kotlin.sdk.ImmutableContext
 import dev.openfeature.kotlin.sdk.OpenFeatureAPI
-import dev.openfeature.kotlin.sdk.OpenFeatureStatus
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 
-class FeatureFlags(context: Context) {
-    private val api = OpenFeatureAPI
-    val provider: FeatBitProvider
-    val client: Client
-    val status: OpenFeatureStatus get() = api.getStatus()
+val api = OpenFeatureAPI
+val built = FeatBitProvider.builder(applicationContext) { user ->
+    ClientOptions.builder()
+        .user(user)
+        .sdkKey("YOUR_CLIENT_SDK_KEY")
+        .streamingUrl("wss://YOUR_EVALUATION_SERVER")
+        .eventsUrl("https://YOUR_EVALUATION_SERVER")
+        .build()
+}.build()
+require(built.isSuccess) { "Provider configuration: ${built.code}" }
+val provider = requireNotNull(built.value)
+val client = api.getClient()
 
-    init {
-        val built = FeatBitProvider.builder(context.applicationContext) { user ->
-            ClientOptions.builder()
-                .user(user)
-                .sdkKey("YOUR_CLIENT_SDK_KEY")
-                .streamingUrl("wss://YOUR_EVALUATION_SERVER")
-                .eventsUrl("https://YOUR_EVALUATION_SERVER")
-                .build()
+val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+val registration = applicationScope.launch {
+    try {
+        api.setProviderAndWait(provider, ImmutableContext("user-123"), Dispatchers.IO)
+        val details = client.getBooleanDetails("new-checkout", false)
+        val enabled = details.value
+        // Apply enabled to application state. This coroutine resumes on the main thread.
+        if (details.errorCode != null) {
+            android.util.Log.w("Flags", "Using fallback: ${details.errorCode}")
         }
-            .initializationTimeoutMillis(10_000L)
-            .contextChangeTimeoutMillis(10_000L)
-            .build()
-        require(built.isSuccess) { "Provider configuration: ${built.code}" }
-        provider = requireNotNull(built.value)
-        client = api.getClient("my-android-app", "1.0.0")
-    }
-
-    suspend fun start(targetingKey: String) {
-        api.setProviderAndWait(provider, ImmutableContext(targetingKey), Dispatchers.IO)
-    }
-
-    suspend fun changeUser(targetingKey: String) {
-        api.setEvaluationContextAndWait(ImmutableContext(targetingKey))
-    }
-
-    suspend fun changeContext(context: ImmutableContext) {
-        api.setEvaluationContextAndWait(context)
-    }
-
-    // Detaches the global provider. Observe provider.close() separately for cleanup completion.
-    suspend fun stop() {
-        api.shutdown()
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        android.util.Log.e("Flags", "Registration failed", failure)
     }
 }
 ```
 
-Create one `FeatureFlags` owner and call `start` once from a coroutine owned by your application. The following snippet runs inside that coroutine:
-
-```kotlin
-val flags = FeatureFlags(applicationContext)
-try {
-    flags.start("user-123")
-    android.util.Log.i("Flags", "OpenFeature status: ${flags.status}")
-    val enabled = flags.client.getBooleanValue("new-checkout", false)
-    // Update application state using enabled; false is the safe fallback.
-} catch (cancelled: kotlinx.coroutines.CancellationException) {
-    throw cancelled
-} catch (failure: Exception) {
-    android.util.Log.e("Flags", "Registration failed", failure)
-}
-```
+Later lifecycle snippets run inside `applicationScope.launch { ... }`. Before the first context change or shutdown, use `registration.join()` to wait for the registration job; serialize subsequent lifecycle operations too. Job completion alone does not establish readiness.
 
 A normally returning suspend call means the lifecycle call completed, not that flags are necessarily ready. OpenFeature converts initialization failures into status. Inspect status and evaluation details; because of the known upstream status issue, even Ready is not sufficient evidence of a successful flag evaluation. Before initialization, during reconciliation, or after failure, OpenFeature returns caller defaults when evaluation is unavailable.
 
-Keep the owner and its coroutine scope at application scope, and avoid retaining destroyed Activities. Use structured concurrency and propagate cancellation. Coroutine cancellation does not prove an already submitted core operation was undone. Run UI updates on the main dispatcher. See the [Kotlin Café sample](samples/kotlin/README.md) for a lifecycle-aware UI integration.
+Keep the provider and its coroutine scope at application scope, and avoid retaining destroyed Activities. Use structured concurrency and propagate cancellation. Coroutine cancellation does not prove an already submitted core operation was undone. Run UI updates on the main dispatcher. See the [Kotlin Café sample](samples/kotlin/README.md) for a lifecycle-aware UI integration.
+
+## Known limitation
+
+The currently integrated OpenFeature Kotlin SDK has a known issue that can report Ready after a newer Stale or Error event. The provider still checks the current identity and data readiness before returning a value. Use evaluation details to distinguish a successful flag evaluation from a fallback; do not rely on status alone. See the [verification record](docs/verification.md#observed-upstream-g02-results) for affected versions and reproduction details.
 
 ## Examples
 
@@ -148,7 +132,6 @@ The Café sample supports Local/Live configuration, flag editing, evaluation, co
 Use the OpenFeature `Client`, which applies defaults and hooks. Do not call the provider's evaluation methods directly.
 
 ```kotlin
-val client = flags.client
 val enabled = client.getBooleanValue("new-checkout", false)
 val title = client.getStringValue("checkout-title", "Checkout")
 val limit = client.getIntegerValue("item-limit", 10)
@@ -166,42 +149,45 @@ The core checks the declared flag type. A mismatch preserves the original caller
 
 ### Identity
 
-Call `flags.changeUser("user-456")` from a coroutine after the previous lifecycle operation completes. Identity changes must go through OpenFeature so its context stays aligned with the provider. There is no public underlying FeatBit client or provider `identify` method.
+Call `api.setEvaluationContextAndWait(ImmutableContext("user-456"))` from the application coroutine after the previous lifecycle operation completes. Identity changes must go through OpenFeature so its context stays aligned with the provider. There is no public underlying FeatBit client or provider `identify` method.
 
-For attributes, supply a complete context through the same OpenFeature lifecycle:
+For attributes, supply a complete context through the same OpenFeature lifecycle. This snippet waits for initial registration; do not start another identity change until this job finishes:
 
 ```kotlin
-val attributes = mapOf(
-    "name" to dev.openfeature.kotlin.sdk.Value.String("Jane"),
-    "plan" to dev.openfeature.kotlin.sdk.Value.String("premium"),
-)
-val context = ImmutableContext("user-456", attributes)
-try {
-    flags.changeContext(context)
-} catch (cancelled: kotlinx.coroutines.CancellationException) {
-    throw cancelled
-} catch (failure: Exception) {
-    android.util.Log.e("Flags", "Context change failed", failure)
+applicationScope.launch {
+    registration.join()
+    val attributes = mapOf(
+        "name" to dev.openfeature.kotlin.sdk.Value.String("Jane"),
+        "plan" to dev.openfeature.kotlin.sdk.Value.String("premium"),
+    )
+    val context = ImmutableContext("user-456", attributes)
+    try {
+        api.setEvaluationContextAndWait(context)
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        android.util.Log.e("Flags", "Context change failed", failure)
+    }
 }
 ```
 
 The default identity policy requires a nonempty targeting key. Whitespace-only keys are invalid. `name`, when provided, must be a nonblank string; `keyId` is reserved. Other supported scalar attributes are converted to text, while null values remain null. Empty attribute names are invalid; `featbit.sdk.*` is reserved when automatic attributes are enabled. Lists, structures, and timestamps are rejected as user attributes. Each context supplies the intended identity and attributes; do not rely on attributes from a previous identity being retained.
 
-For persistent anonymous users, change both parts of the builder in `FeatureFlags`:
+For persistent anonymous users, change both builders in Quick Start:
 
 - Add `.identityPolicy(co.featbit.openfeature.android.IdentityPolicy.PERSISTENT_ANONYMOUS)` to the provider builder.
 - Add `.anonymousEnabled(true)` to the `ClientOptions` builder, including when the initial user is named.
 
-Then `flags.start("")` starts anonymously, and `flags.changeUser("")` logs out to the persisted anonymous identity. These methods create an empty context with no attributes. The anonymous ID is reused rather than reset; a missing key with additional attributes is invalid.
+Then pass `ImmutableContext()` as the initial context to `api.setProviderAndWait` to start anonymously, or call `api.setEvaluationContextAndWait(ImmutableContext())` to log out. Both use an empty context with no attributes. The anonymous ID is reused rather than reset; a missing key with additional attributes is invalid.
 
 ### Track and connection management
 
 ```kotlin
-flags.client.track("order-completed", dev.openfeature.kotlin.sdk.TrackingEventDetails(
+client.track("order-completed", dev.openfeature.kotlin.sdk.TrackingEventDetails(
     29.95, dev.openfeature.kotlin.sdk.ImmutableStructure(emptyMap()),
 ))
 
-flags.provider.flush().observe { outcome ->
+provider.flush().observe { outcome ->
     android.util.Log.i("Flags", "Flush result: ${outcome.code}")
 }
 ```
@@ -214,27 +200,34 @@ Operation observers have no main-thread delivery guarantee; marshal UI updates t
 
 ### Cleanup
 
-Stop the application-scoped integration when its owner is finished, rather than on each Activity recreation. The example owns the global OpenFeature API; do not call its shutdown if another component has taken ownership of that API.
+Stop the application-scoped integration when its owner is finished, rather than on each Activity recreation. Finish any pending identity-change job before starting the shutdown job below. The example owns the global OpenFeature API; do not call its shutdown if another component has taken ownership of that API.
 
 ```kotlin
-try {
-    flags.stop()
-} catch (cancelled: kotlinx.coroutines.CancellationException) {
-    throw cancelled
-} catch (failure: Exception) {
-    android.util.Log.e("Flags", "OpenFeature shutdown failed", failure)
-} finally {
-    flags.provider.close().observe { outcome ->
-        if (outcome.isSuccess) {
-            val result = requireNotNull(outcome.value)
-            android.util.Log.i("Flags", "Cleanup complete: ${result.cleanupComplete}" +
-                "; undelivered events: ${result.undeliveredEvents}")
-        } else {
-            android.util.Log.w("Flags", "Close result: ${outcome.code}")
+val shutdown = applicationScope.launch {
+    registration.join()
+    try {
+        api.shutdown()
+    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        android.util.Log.e("Flags", "OpenFeature shutdown failed", failure)
+    } finally {
+        provider.close().observe { outcome ->
+            if (outcome.isSuccess) {
+                val result = requireNotNull(outcome.value)
+                android.util.Log.i("Flags", "Cleanup complete: ${result.cleanupComplete}" +
+                    "; undelivered events: ${result.undeliveredEvents}")
+            } else {
+                android.util.Log.w("Flags", "Close result: ${outcome.code}")
+            }
         }
     }
 }
+// Only cancel a scope owned exclusively by this integration.
+shutdown.invokeOnCompletion { applicationScope.cancel() }
 ```
+
+The example cancels its own scope after the shutdown job finishes. Omit that cancellation if you reused a scope shared with other application work. Android does not guarantee an application termination callback, so do not rely on process exit to flush events.
 
 OpenFeature shutdown initiates provider cleanup without waiting for it. `provider.close()` immediately closes admission and returns the same observable operation on repeated calls, so it can also observe cleanup already initiated by shutdown. A returning shutdown call is not a cleanup or event-delivery acknowledgment.
 

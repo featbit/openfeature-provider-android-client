@@ -1,5 +1,11 @@
 # Implementation and Verification Record
 
+## README compilation check — 2026-10-10
+
+Extracted the Kotlin and Java Quick Start, evaluation, context-change, Track/Flush, and cleanup code blocks, plus the optional Java suspend helper and full shutdown example, into an isolated Android consumer project under `build/readme-compile-check`. Only enclosing methods/classes and separate snippet scopes were added; the snippets use the staged provider AAR and its Maven dependencies, not provider source substitution.
+
+Both `:kotlin:compileDebugKotlin` and `:java:compileDebugJavaWithJavac` passed with JDK 17, Kotlin 2.2.10, AGP 8.10.1, and compileSdk 34. The first attempt exposed a missing AndroidX prerequisite; both READMEs now document `android.useAndroidX=true`. Final output: `build/readme-compile-check.log`. This verifies compilation, not device execution, network initialization, callback ordering, or live updates. No release version or tag was changed.
+
 Date: 2026-10-09. The provider is implemented as development version `0.1.0-SNAPSHOT` and has not been officially released. This record describes verification performed in this repository and does not inherit core SDK test results.
 
 ## Implementation scope
