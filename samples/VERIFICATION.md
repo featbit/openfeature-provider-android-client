@@ -1,5 +1,14 @@
 # Sample verification — 2026-10-09
 
+## SDK/provider 0.3.0 rerun — 2026-11-02
+
+Using Maven Central SDK 0.3.0 and the provider 0.3.0 AAR staged by the current acceptance run:
+- Kotlin Debug and minified Release builds, all 5 unit tests, and Debug/Release lint passed.
+- The Kotlin `providerCafeFlow` instrumentation test passed on `emulator-5554` (Pixel_3a_API_34, Android 14), covering Local flag evaluation/editing, fallback, context switching, reconnect, and disabled tracking.
+- The Kotlin sample was launched successfully after the test and left open on the emulator.
+
+Evidence: `build/acceptance/20261102-160524-8d35c47a/kotlin-sample.log`; unit and connected-test reports under `samples/kotlin/build/`. The sample consumed the run's isolated Maven repository via `-PtestRepository`. No Live backend or event-delivery verification was performed. Earlier results below retain their original versions.
+
 These results belong to the OpenFeature sample implementation in this repository. They do not
 inherit the Android SDK sample's historical acceptance record or resolve the upstream G02 limitation.
 
