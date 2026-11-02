@@ -16,7 +16,7 @@ Use JDK 17 and Android SDK 34. Set `JAVA_HOME` and `ANDROID_HOME` (or configure 
 
 You can also open `samples/` directly in Android Studio; it includes the same Gradle 8.11.1 wrapper as the provider root. Publish the provider locally before the first sample sync.
 
-Open **OpenFeature Café Kotlin** or **OpenFeature Café Java**. Application IDs are `co.featbit.openfeature.sample.kotlin` and `co.featbit.openfeature.sample.java`, so they coexist with the direct SDK samples. Local Demo starts without credentials or a server. Both apps consume the locally published provider AAR from `../build/repository`; its transitive dependencies are FeatBit 0.2.0 and OpenFeature Kotlin 0.9.0. Kotlin uses 2.2.10, AGP 8.10.1 and the root Gradle 8.11.1 wrapper.
+Open **OpenFeature Café Kotlin** or **OpenFeature Café Java**. Application IDs are `co.featbit.openfeature.sample.kotlin` and `co.featbit.openfeature.sample.java`, so they coexist with the direct SDK samples. Local Demo starts without credentials or a server. Both apps consume the locally published provider AAR from `../build/repository`; its transitive dependencies are FeatBit 0.3.0 and OpenFeature Kotlin 0.9.0. Kotlin uses 2.2.10, AGP 8.10.1 and the root Gradle 8.11.1 wrapper.
 
 ## Try it
 

@@ -1,5 +1,11 @@
 # Implementation and Verification Record
 
+## Core SDK dependency update — 2026-11-02
+
+Updated the FeatBit Android SDK dependency and publication metadata expectations to `co.featbit:featbit-client-android:0.3.0`. The provider version, consumer/sample defaults, installation examples, and acceptance/publication defaults are also updated to `0.3.0`; historical verification below retains its original versions.
+
+Maven Central now resolves SDK 0.3.0. Full acceptance passed: 34 script tests, 50 provider tests, Java/Kotlin consumer 3 tests each, consumer Debug/Release/R8 builds, provider/consumer lint, formatting, API baseline, and all five publication files. Evidence: `build/acceptance/20261102-160524-8d35c47a/`. This supersedes the earlier dependency-resolution failure in `build/acceptance/20261102-154835-0ae1f50f/`. No consumer device or live-server acceptance was performed in this run. Kotlin sample Debug/Release builds, 5 unit tests, both lint variants, and the Local device flow also passed; see [sample verification](../samples/VERIFICATION.md).
+
 ## Release version selection — 2026-10-10
 
 Selected provider version `0.2.0` and tag `v0.2.0`, aligned with the FeatBit Android SDK dependency. Provider, independent consumers, samples, and acceptance/publication defaults now use this release version. Snapshot validation fixtures retain an explicit snapshot version independent of the build default. README installation coordinates use the selected version.
