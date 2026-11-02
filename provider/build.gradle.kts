@@ -8,7 +8,7 @@ plugins {
 
 group = "co.featbit"
 
-version = providers.gradleProperty("providerVersion").getOrElse("0.2.0")
+version = providers.gradleProperty("providerVersion").getOrElse("0.3.0")
 
 android {
     namespace = "co.featbit.openfeature.android"
@@ -24,7 +24,7 @@ android {
 }
 
 dependencies {
-    api("co.featbit:featbit-client-android:0.2.0")
+    api("co.featbit:featbit-client-android:0.3.0")
     api("dev.openfeature:kotlin-sdk:0.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     testImplementation("junit:junit:4.13.2")

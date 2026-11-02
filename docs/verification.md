@@ -1,5 +1,11 @@
 # Implementation and Verification Record
 
+## Core SDK dependency update — 2026-11-02
+
+Updated the FeatBit Android SDK dependency and publication metadata expectations to `co.featbit:featbit-client-android:0.3.0`. The provider version, consumer/sample defaults, installation examples, and acceptance/publication defaults are also updated to `0.3.0`; historical verification below retains its original versions.
+
+All 34 script tests passed. Provider/consumer acceptance is blocked at dependency resolution: Maven Central returned HTTP 404 for the 0.3.0 POM, and a Gradle retry with `--refresh-dependencies` also could not resolve the artifact. No compatibility, device, or live-server success is claimed for 0.3.0. Initial acceptance logs: `build/acceptance/20261102-154835-0ae1f50f/`. Rerun `python tools/acceptance.py` once the artifact is available.
+
 ## Release version selection — 2026-10-10
 
 Selected provider version `0.2.0` and tag `v0.2.0`, aligned with the FeatBit Android SDK dependency. Provider, independent consumers, samples, and acceptance/publication defaults now use this release version. Snapshot validation fixtures retain an explicit snapshot version independent of the build default. README installation coordinates use the selected version.

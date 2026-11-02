@@ -23,7 +23,7 @@ For application integration, start with the [main README](../README.md) or the [
 | --- | --- |
 | Publication coordinates | Retain `co.featbit:featbit-openfeature-provider-android:<version>`, established in the core SDK architecture |
 | Package | `co.featbit.openfeature.android`, proposed for this provider |
-| Dependency baseline | Pin the released and verified `co.featbit:featbit-client-android:0.2.0` (G01 satisfied); use OpenFeature 0.9.0 for development/reproduction. The pinned OpenFeature version remains 0.9.0; G02 is tracked as an external limitation, not a required FeatBit fix |
+| Dependency baseline | Pin the released and verified `co.featbit:featbit-client-android:0.3.0` (G01 satisfied); use OpenFeature 0.9.0 for development/reproduction. The pinned OpenFeature version remains 0.9.0; G02 is tracked as an external limitation, not a required FeatBit fix |
 | Platform | Android, minSdk 21, JVM 11 bytecode, Kotlin 2.2.10 design baseline; verify the JDK/AGP/Gradle combination through consumers |
 | Ownership | Each provider creates and exclusively owns one FeatBitClient; the first release does not take over an externally running client |
 | User model | The current OpenFeature EvaluationContext is the identity source; transitions follow onContextSet → adoption receipt → awaitReady |

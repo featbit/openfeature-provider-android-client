@@ -58,7 +58,7 @@ Use a finite model to enumerate relative create/adopt/ready/timeout/cancel/close
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
-| G01 Core capabilities | FeatBitClient identity APIs, consistent declared-type checks, Double model, and compatible consumers; 0.2.0 released with verified public artifacts, see [release evidence](./implementation-plan.md#1-reviewed-baselines) | Satisfied; pin 0.2.0 |
+| G01 Core capabilities | FeatBitClient identity APIs, consistent declared-type checks, Double model, and compatible consumers; 0.2.0 released with verified public artifacts, see [release evidence](./implementation-plan.md#1-reviewed-baselines) | Satisfied; pin 0.3.0 |
 | G02 OpenFeature status commit | R15 plus provider replacement, initialization failure, and context reconciliation variants pass against a released dependency containing the fix that prevents obsolete lifecycle results from overwriting newer events | External known limitation; deterministic tests confirm the 0.9.0 defect. Fixing upstream is excluded from the current FeatBit release scope |
 | G03 Functionality and races | Deterministic A01–A12, A14, and FeatBit-owned R01–R24 checks pass; upstream R15 status arbitration is tracked separately under G02 | 50 provider tests pass, including ten added concurrency regressions; the complete gate has not been declared passed; see verification record |
 | G04 Android artifacts | Independent Kotlin/Java builds, Debug/Release/R8, API 21 and newer devices/emulators, memory/main-thread I/O checks | Java/Kotlin Debug/Release/R8 and API 34 verified; API 21 and other checks remain |

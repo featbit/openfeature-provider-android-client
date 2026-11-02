@@ -159,7 +159,7 @@ class PublicationTests(unittest.TestCase):
 
     def test_wrong_pom_dependency_rejected(self):
         p = self.files["pom"]
-        p.write_text(p.read_text().replace("0.2.0", "0.1.0"))
+        p.write_text(p.read_text().replace(publication.EXPECTED[("co.featbit", "featbit-client-android")], "0.1.0"))
         self.checksums()
         with self.assertRaisesRegex(ValueError, "POM dependency"):
             self.verify()

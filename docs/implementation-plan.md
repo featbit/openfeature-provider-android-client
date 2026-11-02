@@ -53,9 +53,9 @@ Other boundaries remain: create ClientOptions through a factory; arbitrate gener
 
 ## 4. Implementation sequence (authorized on 2026-10-09)
 
-1. Core G01 is complete and the dependency is pinned to 0.2.0. No additional core interface or release is required.
+1. Core G01 is complete and the dependency is now pinned to 0.3.0. No additional core interface or release is required.
 2. Retain the R15 reproductions against OpenFeature 0.9.0 for initialization, context reconciliation, and replacement. They document upstream G02 behavior; upstream changes are outside the current FeatBit scope.
-3. The independent Android library project exists, with G02 tracked separately. Development/reproduction pins OpenFeature 0.9.0 and core 0.2.0. Pin AGP/Gradle/JDK; expose both public dependencies through api and internal dependencies through implementation. This development baseline is not release-dependency acceptance.
+3. The independent Android library project exists, with G02 tracked separately. Development/reproduction pins OpenFeature 0.9.0 and core 0.3.0. Pin AGP/Gradle/JDK; expose both public dependencies through api and internal dependencies through implementation. This development baseline is not release-dependency acceptance.
 4. Implement pure mappings/EvaluationAdapter, followed by client ownership, lifecycle, and event bridging. Reuse TestData instead of duplicating a test source. Retain Double boundaries without restoring exact Long or zero-events-on-failure requirements.
 5. Keep OpenFeature 0.9.0 pinned and retain its known-limitations documentation. Complete independent Kotlin/Java consumers, Android device, and server-event acceptance. Recheck integration if the dependency changes later. Core compatibility evidence does not replace these checks.
 6. Complete integration documentation, limitations, migration/compatibility tables, and artifact verification. Release only after all applicable gates pass.

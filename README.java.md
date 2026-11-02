@@ -49,7 +49,7 @@ android {
 }
 
 dependencies {
-    implementation 'co.featbit:featbit-openfeature-provider-android:0.2.0'
+    implementation 'co.featbit:featbit-openfeature-provider-android:0.3.0'
 }
 ```
 
